@@ -1,11 +1,12 @@
 #include<iostream>
 #include"numArray.h"
 #include <omp.h>
+#include <cmath>
 
 
 numArray::numArray(int i){
     int j;
-    array=new int[i];
+    array=new double[i];
     length = i;
     for(j=0; j<i; j++){
         array[j]=j;
@@ -44,7 +45,7 @@ void numArray::printArray(){
     }
 };
 
-int numArray::getElement(int k){
+double numArray::getElement(int k){
     if(k>=length){
         std::cout<<"The element being accessed must be less than the number of elements ("<<k<<","<<length<<")"<<std::endl;
 	return 0;
@@ -72,3 +73,30 @@ void numArray::parallelMultiply(int n){
 	}
 };
 
+void numArray::sqrtArray(){
+    for(int i=0; i<length; i++){
+        array[i] = sqrt(array[i]);
+    } 
+};
+
+
+void numArray::sqrtParallelArray(){
+ #pragma omp parallel for 
+     for(int i=0; i<length; i++){
+         array[i] = sqrt(array[i]);
+    }
+ };
+
+ void numArray::logArray(){
+    for(int i=0; i<length; i++){
+        array[i] = log(array[i]);
+    } 
+};
+
+
+void numArray::logParallelArray(){
+ #pragma omp parallel for 
+     for(int i=0; i<length; i++){
+         array[i] = log(array[i]);
+    }
+ };
