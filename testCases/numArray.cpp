@@ -18,7 +18,7 @@ void numArray::deleteNumArray(){
     delete [] array;
 };
 
-void numArray::parallelAdd(numArray  otherArray){
+__attribute__((target(mic))) void numArray::parallelAdd(numArray  otherArray){
     int i;
     //This is the part which parallelizes the for loop
     #pragma omp parallel for
@@ -66,7 +66,7 @@ void numArray::serialMultiply(int n){
 
 };
 
-void numArray::parallelMultiply(int n){
+__attribute__((target(mic))) void numArray::parallelMultiply(int n){
     #pragma omp parallel for
         for(int i=0; i<length; i++){
            array[i]*=n;	
@@ -80,7 +80,7 @@ void numArray::sqrtArray(){
 };
 
 
-void numArray::sqrtParallelArray(){
+__attribute__((target(mic))) void numArray::sqrtParallelArray(){
  #pragma omp parallel for 
      for(int i=0; i<length; i++){
          array[i] = sqrt(array[i]);
@@ -93,10 +93,14 @@ void numArray::sqrtParallelArray(){
     } 
 };
 
-
-void numArray::logParallelArray(){
+__attribute__((target(mic))) void numArray::logParallelArray(){
  #pragma omp parallel for 
      for(int i=0; i<length; i++){
          array[i] = log(array[i]);
     }
  };
+
+ int numArray::getLength(){
+     return length;
+ };
+

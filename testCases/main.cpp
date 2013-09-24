@@ -16,7 +16,10 @@ int main(){
     a->deleteNumArray();
     delete a;
     a = new numArray(100000000);
+    int length = a->getLength();
+    std::cout<<length<<std::endl;
     time(&begining);
+    #pragma offload target(mic) in(b:length(length)) inout(a:length(length))
     a->sqrtParallelArray();
     a->logParallelArray();
     time(&end);
