@@ -50,11 +50,12 @@ double numArrayWrapper::sqrtAverageLogFast(numArray data){
 
 double numArrayWrapper::sqrtAverageLogSlow(numArray data){
     double average = 0;
-    data.logArray();
     data.sqrtArray();
+    data.logArray();
     for(int i=0; i<data.getLength(); i++){
         average+=data.getElement(i);
     }
+    
     return average/data.getLength(); 
     
 };

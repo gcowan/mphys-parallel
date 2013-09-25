@@ -12,7 +12,7 @@ int main(){
     numArrayWrapper wrapper;
     //Initialising the array
     for(int i=0; i<arraySize; i++){
-        a[i].generateNumArray(1000000);
+        a[i].generateNumArray(10000);
     }
     //creating the timer
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -40,7 +40,7 @@ int main(){
     //reinitializing array
     a = new numArray[arraySize];
     for(int i=0; i<arraySize; i++){
-        a[i].generateNumArray(1000000);
+        a[i].generateNumArray(10000);
     }
 
     start = std::chrono::system_clock::now();

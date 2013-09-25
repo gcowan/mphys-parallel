@@ -13,7 +13,7 @@ numArray::numArray(int i){
     array=new double[i];
     length = i;
     for(j=0; j<i; j++){
-        array[j]=j;
+        array[j]=j+1;
     }
 
 };
@@ -112,7 +112,7 @@ void numArray::logParallelArray(){
     array=new double[i];
     length = i;
     for(int j=0; j<i; j++){
-        array[j]=j;
+        array[j]=j+1;
     }
 
 };
