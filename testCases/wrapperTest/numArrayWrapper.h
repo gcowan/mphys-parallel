@@ -4,8 +4,8 @@
 class numArrayWrapper{
     public:
         //Method to calculate the square root of all the functions then the average
-	double sqrtAverageFast(numArray data);
-	double sqrtAverageSlow(numArray data);
+	double sqrtAverageLogFast(numArray data);
+	double sqrtAverageLogSlow(numArray data);
 
 };
 #endif
