@@ -13,6 +13,7 @@ int findMin(std::vector<double>);
 
 int main(){
     const double PI  =3.141592653589793238462;
+    double sigma = 2.0;
     //generating the normally distributed doubles using the box mueller method
     int length = 10000000;
     double * data = new double[length];
@@ -22,7 +23,7 @@ int main(){
         double rand2 = ((double)rand())/RAND_MAX;
 
         //Now doing the box muller method
-        data[i] = sqrt(-2.0*log(rand1))*cos(2*PI*rand2);
+        data[i] = sqrt(-2.0*log(rand1))*cos(2*PI*rand2)*sigma;
     }
     
     //Creating array to store values of the negative log likelihood 
