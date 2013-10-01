@@ -4,7 +4,8 @@
 class negativeLog{
     public:
         //Method get the negative log likelihood from the dataSet  
-        double evaluateDataSet(double * data, int numData, double sigmaEst);
+        double evaluateDataSetSerial(double * data, int numData, double sigmaEst);
+        double evaluateDataSetParallel(double * data, int numData, double sigmaEst);
 };
 #endif
 

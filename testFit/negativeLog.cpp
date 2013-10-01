@@ -3,7 +3,7 @@
 #include <cmath>
 #include <omp.h>
 
-double negativeLog::evaluateDataSet(double * data, int dataLength, double sigmaVal){
+double negativeLog::evaluateDataSetParallel(double * data, int dataLength, double sigmaVal){
     gaussianFunc func = gaussianFunc(sigmaVal);
     double normalization = func.integral();
     //summing up all the logs
@@ -34,4 +34,18 @@ double negativeLog::evaluateDataSet(double * data, int dataLength, double sigmaV
         trueTotal += total[i];
     }
     return -trueTotal;
+};
+
+
+double negativeLog::evaluateDataSetSerial(double * data, int dataLength, double sigmaVal){
+    gaussianFunc func = gaussianFunc(sigmaVal);
+    double normalization = func.integral();
+    double total = 0;
+    //summing up all the logs
+    for(int i =0; i<dataLength; i++){
+        double val = func.evaluate(data[i]);
+        total[threadNum] += log(val/normalization);
+    }
+    
+    return -total;
 };
