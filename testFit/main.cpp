@@ -13,7 +13,8 @@ int findMin(std::vector<double>);
 
 int main(){
     const double PI  =3.141592653589793238462;
-    double sigma = 2.0;
+    double sigma = 0.782;
+
     //generating the normally distributed doubles using the box mueller method
     int length = 10000000;
     double * data = new double[length];
@@ -37,7 +38,7 @@ int main(){
     }
     //finding the min value of loglikelihood 
     int minIndex = findMin(negativeLogs);
-    std::cout<<"The value that fits this gaussian is"<<(((double) minIndex)/sigmaLength)*2+0.001<<std::endl;
+    std::cout<<"The value that fits this gaussian is: "<<(((double) minIndex)/sigmaLength)*2+0.001<<std::endl;
 
 
 }
