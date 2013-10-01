@@ -1,9 +1,11 @@
 #include "negativeLog.h"
-#include <stdio>
 #include <ctime>
 #include <cstdlib>
 #include <cmath>
 #include <climits>
+#include <vector>
+#include <iostream>
+
 //Method to find max value in an array returning its index
 int findMax(std::vector<double>);
 int findMin(std::vector<double>);
@@ -20,7 +22,7 @@ int main(){
         double rand2 = ((double)rand())/RAND_MAX;
 
         //Now doing the box muller method
-        data[i] = arccos(sqrt(-2.0*log(rand1))*cos(2*PI*rand2));
+        data[i] = sqrt(-2.0*log(rand1))*cos(2*PI*rand2);
     }
     
     //Creating array to store values of the negative log likelihood 
@@ -39,7 +41,7 @@ int main(){
 
 }
 
-int findMax(vector<double> data){
+int findMax(std::vector<double> data){
     double maxValue = INT_MIN;
     int maxIndex = INT_MIN;
     for(int i=0; i<data.size(); i++){
@@ -51,7 +53,7 @@ int findMax(vector<double> data){
     return maxIndex;
 };
 
-int findMin(vector<double> data){
+int findMin(std::vector<double> data){
     double minValue = INT_MAX;
     int minIndex = INT_MIN;
     for(int i=0; i<data.size(); i++){

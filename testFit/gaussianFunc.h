@@ -2,10 +2,9 @@
 
 #ifndef GAUSSIANFUNC_H
 #define GAUSSIANFUNC_H
-class gaussianFunc(){
+class gaussianFunc{
     private:
         double sigma;
-        const double PI  =3.141592653589793238462;
 
     public:
         //Constructor
@@ -15,7 +14,7 @@ class gaussianFunc(){
         //Method to get the integral of the function
         double integral();
         //get and set methods 
-        void setSigma();
+        void setSigma(double newSigma);
         double getSigma();
 
   

@@ -1,4 +1,4 @@
-#include "gaussianFunction.h"
+#include "gaussianFunc.h"
 #include <cmath>
 
 gaussianFunc::gaussianFunc(double sigmaVal){
@@ -12,7 +12,8 @@ double gaussianFunc::evaluate(double x){
 
 
 double gaussianFunc::integral(){
-    double out = sigma*sqrt(2*PI);
+    double Pi  =3.141592653589793238462;
+    double out = sigma*sqrt(2*Pi);
     return out;
 };
 

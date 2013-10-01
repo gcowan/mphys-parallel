@@ -1,5 +1,5 @@
 #include "negativeLog.h"
-#include "guassianFunc.h"
+#include "gaussianFunc.h"
 #include <cmath>
 
 double negativeLog::evaluateDataSet(double * data, int dataLength, double sigmaVal){
