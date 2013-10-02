@@ -6,16 +6,25 @@
 double negativeLog::evaluateDataSetParallel(double * data, int dataLength, double sigmaVal){
     gaussianFunc func = gaussianFunc(sigmaVal);
     double normalization = func.integral();
+    int numThreads;
+    double * total;
     //summing up all the logs
-    int numThreads = 8;
-    double total [numThreads];
     //ensuring all values in total are set to 0
-    for(int i=0; i<numThreads; i++){
-        total[i] = 0;
-    }
     #pragma omp parallel  default(none) shared(total,numThreads,normalization,dataLength,data,sigmaVal) 
     {
+        
         int threadNum = omp_get_thread_num();
+        //Using the first thread to get the number of threads then initialize the total array and set all values in it to zero 
+        if(threadNum==0){
+            numThreads = omp_get_num_threads();
+            total = new double[numThreads];
+            for(int i=0; i<numThreads; i++){
+                total[i] = 0;
+            }
+
+        }
+        //Adding barrier so all threads wait for the first thread
+        #pragma omp barrier
         gaussianFunc threadFunc = gaussianFunc(sigmaVal);
         int lowerBound = (dataLength/numThreads)*(threadNum);
         int upperBound =  (dataLength/numThreads)*(threadNum+1);
@@ -38,6 +47,7 @@ double negativeLog::evaluateDataSetParallel(double * data, int dataLength, doubl
     for(int i=0; i<numThreads; i++){
         trueTotal += total[i];
     }
+    delete [] total;
     return -trueTotal;
 };
 
