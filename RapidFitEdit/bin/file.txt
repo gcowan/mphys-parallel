@@ -1,173 +1,0 @@
-
-[1mRooFit v3.54 -- Developed by Wouter Verkerke and David Kirkby[0m 
-                Copyright (C) 2000-2012 NIKHEF, University of California & Stanford University
-                All rights reserved, please read http://roofit.sourceforge.net/license.txt
-
-
-RapidFit
-Framework SVN Rev:	exported
-PDF SVN REV:		exported
-Compiled With Optional GSL Components
-Build Date:		19:22_2013-10-09
-Built Against ROOT:	"5.34/01"
-Starting time:		Wed Oct  9 19:34:37 2013
-
-
-Current Runtime Arguments: 
-./fitting -f ../tutorials/SimpleDoubleGauss.xml 
-
-
-
-Finished Updating PDF Paths
-
-
-
-XML config file: ../tutorials/SimpleDoubleGauss.xml loaded Successfully!
-
-Seed tag not found in config file, defaulting to TRandom3(0).
-SEED being used is:	0
-PDFConfigurator: Options Passed to this PDF
- PDFConfigurator::Param   [ PlotComponents : True ]
-SimpleDoubleGauss
-
-
-		Starting Fit to Find Global Minima!
-
-Initializing Generator(s)
-FOAM NOT Cached, Generating Foam:	Foam-SimpleDoubleGauss_PDF0-0_0_82044679345563054
-Storing TFOAM TObject in:		Foam-SimpleDoubleGauss_PDF0-0_0_82044679345563054.root
-DataSet contains a total of:     10000     events. In 1 Discrete DataSets.
-
- **********
- **    1 **SET PRINT           0
- **********
-
-Integration Test: numerical : analytical  8.02089 : 8.02121  
-  SimpleDoubleGauss_PDF0
-
- PARAMETER DEFINITIONS:
-    NO.   NAME         VALUE      STEP SIZE      LIMITS
-     1 sigma        2.00000e+00  2.00000e-03   -1.00000e+01  1.00000e+01
-     2 sigma2       5.00000e+00  2.00000e-03   -1.00000e+01  1.00000e+01
-     3 f_sig1       6.00000e-01  1.00000e-04    0.00000e+00  1.00000e+00
- **********
- **    2 **SET ERR         0.5
- **********
- **********
- **    3 **SET STR           1
- **********
- **********
- **    4 **SET NOGRADIENT
- **********
-
-Starting Fit!
- **********
- **    5 **MIGRAD       1e+06       0.001
- **********
-Call: 1     NLL: 28043.26281 minNLL: 0 EDM: 0.5   Status: 0                    Call: 2     NLL: 28043.2669 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 3     NLL: 28043.25873 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 4     NLL: 28043.30407 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 5     NLL: 28043.22233 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 6     NLL: 28043.26399 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 7     NLL: 28043.26165 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 8     NLL: 28043.27531 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 9     NLL: 28043.25186 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 10    NLL: 28043.26156 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 11    NLL: 28043.26407 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 12    NLL: 28043.25029 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 13    NLL: 28043.27538 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 14    NLL: 28041.44947 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 15    NLL: 28041.25582 minNLL: 28043.26281 EDM: 0.5   Status: 0                    Call: 16    NLL: 28041.27974 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 17    NLL: 28041.24646 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 18    NLL: 28041.18711 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 19    NLL: 28041.33824 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 20    NLL: 28041.26131 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 21    NLL: 28041.2564 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 22    NLL: 28041.26617 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 23    NLL: 28041.25885 minNLL: 28041.25582 EDM: 0.5   Status: 0                    Call: 24    NLL: 28041.05189 minNLL: 28041.25582 EDM: 0.898 Status: 0                    Call: 25    NLL: 28041.02524 minNLL: 28041.05189 EDM: 0.898 Status: 0                    Call: 26    NLL: 28041.09234 minNLL: 28041.05189 EDM: 0.898 Status: 0                    Call: 27    NLL: 28041.04823 minNLL: 28041.05189 EDM: 0.898 Status: 0                    Call: 28    NLL: 28041.06859 minNLL: 28041.05189 EDM: 0.898 Status: 0                    Call: 29    NLL: 28041.03186 minNLL: 28041.05189 EDM: 0.898 Status: 0                    Call: 30    NLL: 28041.08539 minNLL: 28041.05189 EDM: 0.898 Status: 0                    Call: 31    NLL: 28040.9481 minNLL: 28041.05189 EDM: 0.209 Status: 1                    Call: 32    NLL: 28040.75743 minNLL: 28041.05189 EDM: 0.209 Status: 1                    Call: 33    NLL: 28040.76686 minNLL: 28040.75743 EDM: 0.209 Status: 1                    Call: 34    NLL: 28040.76122 minNLL: 28040.75743 EDM: 0.209 Status: 1                    Call: 35    NLL: 28040.76333 minNLL: 28040.75743 EDM: 0.209 Status: 1                    Call: 36    NLL: 28040.7643 minNLL: 28040.75743 EDM: 0.209 Status: 1                    Call: 37    NLL: 28040.76121 minNLL: 28040.75743 EDM: 0.209 Status: 1                    Call: 38    NLL: 28040.76751 minNLL: 28040.75743 EDM: 0.209 Status: 1                    Call: 39    NLL: 28040.75647 minNLL: 28040.75743 EDM: 0.00151 Status: 1                    Call: 40    NLL: 28040.75647 minNLL: 28040.75743 EDM: 0.00151 Status: 1                    Call: 41    NLL: 28040.76312 minNLL: 28040.75647 EDM: 0.00151 Status: 1                    Call: 42    NLL: 28040.76321 minNLL: 28040.75647 EDM: 0.00151 Status: 1                    Call: 43    NLL: 28040.7628 minNLL: 28040.75647 EDM: 0.00151 Status: 1                    Call: 44    NLL: 28040.76349 minNLL: 28040.75647 EDM: 0.00151 Status: 1                    Call: 45    NLL: 28040.76344 minNLL: 28040.75647 EDM: 0.00151 Status: 1                    Call: 46    NLL: 28040.76291 minNLL: 28040.75647 EDM: 0.00151 Status: 1                    Call: 47    NLL: 28040.75646 minNLL: 28040.75647 EDM: 1.02e-05 Status: 1                    Call: 48    NLL: 28040.75646 minNLL: 28040.75647 EDM: 1.02e-05 Status: 1                    Call: 49    NLL: 28040.76315 minNLL: 28040.75646 EDM: 1.02e-05 Status: 1                    Call: 50    NLL: 28040.76315 minNLL: 28040.75646 EDM: 1.02e-05 Status: 1                    Call: 51    NLL: 28040.76314 minNLL: 28040.75646 EDM: 1.02e-05 Status: 1                    Call: 52    NLL: 28040.76316 minNLL: 28040.75646 EDM: 1.02e-05 Status: 1                    Call: 53    NLL: 28040.76316 minNLL: 28040.75646 EDM: 1.02e-05 Status: 1                    Call: 54    NLL: 28040.76314 minNLL: 28040.75646 EDM: 1.02e-05 Status: 1                     MIGRAD MINIMIZATION HAS CONVERGED.
- MIGRAD WILL VERIFY CONVERGENCE AND ERROR MATRIX.
-Call: 55    NLL: 28040.75646 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 56    NLL: 28040.76315 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 57    NLL: 28040.76315 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 58    NLL: 28040.76314 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 59    NLL: 28040.76316 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 60    NLL: 28040.76316 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 61    NLL: 28040.76314 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 62    NLL: 28040.75673 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 63    NLL: 28040.75673 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 64    NLL: 28040.75647 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 65    NLL: 28040.75647 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 66    NLL: 28040.75673 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 67    NLL: 28040.75673 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 68    NLL: 28040.75647 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 69    NLL: 28040.75647 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 70    NLL: 28040.75673 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 71    NLL: 28040.75673 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 72    NLL: 28040.75647 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 73    NLL: 28040.75647 minNLL: 28040.75646 EDM: 6.5e-09 Status: 1                    Call: 74    NLL: 28040.76657 minNLL: 28040.75646 EDM: 6.5e-09 Status: 3                    Call: 75    NLL: 28040.76754 minNLL: 28040.75646 EDM: 6.5e-09 Status: 3                    Call: 76    NLL: 28040.76008 minNLL: 28040.75646 EDM: 6.5e-09 Status: 3                     FCN=28040.8 FROM MIGRAD    STATUS=CONVERGED      75 CALLS          76 TOTAL
-                     EDM=3.368e-08    STRATEGY= 1      ERROR MATRIX ACCURATE 
-  EXT PARAMETER                                   STEP         FIRST   
-  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  sigma        1.96160e+00   6.75001e-02   6.55811e-04   3.04770e-02
-   2  sigma2       5.06220e+00   7.40428e-02   5.67970e-04   2.39043e-03
-   3  f_sig1       6.27913e-01   1.74247e-02   2.42256e-03  -2.78365e-03
-                               ERR DEF= 0.5
-
-Final NLL: 28040.7564633864		Status: 3		Wed Oct  9 19:34:37 2013
-
-
- **********
- **    6 **HESSE       1e+06       0.001
- **********
-Call: 77    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 78    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 79    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 80    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 81    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 82    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 83    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 84    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 85    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 86    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 87    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 88    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 89    NLL: 28040.75646 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 90    NLL: 28040.75648 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 91    NLL: 28040.75648 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                    Call: 92    NLL: 28040.75647 minNLL: 28040.75646 EDM: 3.37e-08 Status: 3                     FCN=28040.8 FROM HESSE     STATUS=OK             16 CALLS          92 TOTAL
-                     EDM=3.38114e-08    STRATEGY= 1      ERROR MATRIX ACCURATE 
-  EXT PARAMETER                                INTERNAL      INTERNAL  
-  NO.   NAME      VALUE            ERROR       STEP SIZE       VALUE   
-   1  sigma        1.96160e+00   6.75208e-02   2.62324e-05   1.97440e-01
-   2  sigma2       5.06220e+00   7.40600e-02   2.27188e-05   5.30796e-01
-   3  f_sig1       6.27913e-01   1.74210e-02   9.69023e-05   2.58703e-01
-                               ERR DEF= 0.5
-Minuit finished: 		Status: 3		Wed Oct  9 19:34:37 2013
-
-
-Minimised!
-
-Finished Fitting :D
-
-
-		Fit Output:
-Compiling LaTeX output...
-Projecting ToFit: 1
-
-Optimally:
-
-10000
-Combination: 1 Min: -17.6	Max: 17.6	BinNum: 53
-Integration Test: numerical : analytical  7.81    : 7.81  
-  SimpleDoubleGauss_PDF0
-Projecting x
-
-Components: 3
-
-		COMPONENT: 1 of: 3		PDF: SimpleDoubleGauss_PDF0
-
-Constructing PDF Integral of: x Combination: 1 of 1. For component: 0 .	x: -20 <-> 20
-0.781% Complete                    1.56 % Complete                    2.34 % Complete                    3.12 % Complete                    3.91 % Complete                    4.69 % Complete                    5.47 % Complete                    6.25 % Complete                    7.03 % Complete                    7.81 % Complete                    8.59 % Complete                    9.38 % Complete                    10.2 % Complete                    10.9 % Complete                    11.7 % Complete                    12.5 % Complete                    13.3 % Complete                    14.1 % Complete                    14.8 % Complete                    15.6 % Complete                    16.4 % Complete                    17.2 % Complete                    18   % Complete                    18.8 % Complete                    19.5 % Complete                    20.3 % Complete                    21.1 % Complete                    21.9 % Complete                    22.7 % Complete                    23.4 % Complete                    24.2 % Complete                    25   % Complete                    25.8 % Complete                    26.6 % Complete                    27.3 % Complete                    28.1 % Complete                    28.9 % Complete                    29.7 % Complete                    30.5 % Complete                    31.2 % Complete                    32   % Complete                    32.8 % Complete                    33.6 % Complete                    34.4 % Complete                    35.2 % Complete                    35.9 % Complete                    36.7 % Complete                    37.5 % Complete                    38.3 % Complete                    39.1 % Complete                    39.8 % Complete                    40.6 % Complete                    41.4 % Complete                    42.2 % Complete                    43   % Complete                    43.8 % Complete                    44.5 % Complete                    45.3 % Complete                    46.1 % Complete                    46.9 % Complete                    47.7 % Complete                    48.4 % Complete                    49.2 % Complete                    50   % Complete                    50.8 % Complete                    51.6 % Complete                    52.3 % Complete                    53.1 % Complete                    53.9 % Complete                    54.7 % Complete                    55.5 % Complete                    56.2 % Complete                    57   % Complete                    57.8 % Complete                    58.6 % Complete                    59.4 % Complete                    60.2 % Complete                    60.9 % Complete                    61.7 % Complete                    62.5 % Complete                    63.3 % Complete                    64.1 % Complete                    64.8 % Complete                    65.6 % Complete                    66.4 % Complete                    67.2 % Complete                    68   % Complete                    68.8 % Complete                    69.5 % Complete                    70.3 % Complete                    71.1 % Complete                    71.9 % Complete                    72.7 % Complete                    73.4 % Complete                    74.2 % Complete                    75   % Complete                    75.8 % Complete                    76.6 % Complete                    77.3 % Complete                    78.1 % Complete                    78.9 % Complete                    79.7 % Complete                    80.5 % Complete                    81.2 % Complete                    82   % Complete                    82.8 % Complete                    83.6 % Complete                    84.4 % Complete                    85.2 % Complete                    85.9 % Complete                    86.7 % Complete                    87.5 % Complete                    88.3 % Complete                    89.1 % Complete                    89.8 % Complete                    90.6 % Complete                    91.4 % Complete                    92.2 % Complete                    93   % Complete                    93.8 % Complete                    94.5 % Complete                    95.3 % Complete                    96.1 % Complete                    96.9 % Complete                    97.7 % Complete                    98.4 % Complete                    99.2 % Complete                    100  % Complete                    Finished Projecting
-Finished Combination: 1 of 1.
-
-		COMPONENT: 2 of: 3		PDF: SimpleDoubleGauss_PDF0
-
-Constructing PDF Integral of: x Combination: 1 of 1. For component: sigma1 .	x: -20 <-> 20
-0.781% Complete                    1.56 % Complete                    2.34 % Complete                    3.12 % Complete                    3.91 % Complete                    4.69 % Complete                    5.47 % Complete                    6.25 % Complete                    7.03 % Complete                    7.81 % Complete                    8.59 % Complete                    9.38 % Complete                    10.2 % Complete                    10.9 % Complete                    11.7 % Complete                    12.5 % Complete                    13.3 % Complete                    14.1 % Complete                    14.8 % Complete                    15.6 % Complete                    16.4 % Complete                    17.2 % Complete                    18   % Complete                    18.8 % Complete                    19.5 % Complete                    20.3 % Complete                    21.1 % Complete                    21.9 % Complete                    22.7 % Complete                    23.4 % Complete                    24.2 % Complete                    25   % Complete                    25.8 % Complete                    26.6 % Complete                    27.3 % Complete                    28.1 % Complete                    28.9 % Complete                    29.7 % Complete                    30.5 % Complete                    31.2 % Complete                    32   % Complete                    32.8 % Complete                    33.6 % Complete                    34.4 % Complete                    35.2 % Complete                    35.9 % Complete                    36.7 % Complete                    37.5 % Complete                    38.3 % Complete                    39.1 % Complete                    39.8 % Complete                    40.6 % Complete                    41.4 % Complete                    42.2 % Complete                    43   % Complete                    43.8 % Complete                    44.5 % Complete                    45.3 % Complete                    46.1 % Complete                    46.9 % Complete                    47.7 % Complete                    48.4 % Complete                    49.2 % Complete                    50   % Complete                    50.8 % Complete                    51.6 % Complete                    52.3 % Complete                    53.1 % Complete                    53.9 % Complete                    54.7 % Complete                    55.5 % Complete                    56.2 % Complete                    57   % Complete                    57.8 % Complete                    58.6 % Complete                    59.4 % Complete                    60.2 % Complete                    60.9 % Complete                    61.7 % Complete                    62.5 % Complete                    63.3 % Complete                    64.1 % Complete                    64.8 % Complete                    65.6 % Complete                    66.4 % Complete                    67.2 % Complete                    68   % Complete                    68.8 % Complete                    69.5 % Complete                    70.3 % Complete                    71.1 % Complete                    71.9 % Complete                    72.7 % Complete                    73.4 % Complete                    74.2 % Complete                    75   % Complete                    75.8 % Complete                    76.6 % Complete                    77.3 % Complete                    78.1 % Complete                    78.9 % Complete                    79.7 % Complete                    80.5 % Complete                    81.2 % Complete                    82   % Complete                    82.8 % Complete                    83.6 % Complete                    84.4 % Complete                    85.2 % Complete                    85.9 % Complete                    86.7 % Complete                    87.5 % Complete                    88.3 % Complete                    89.1 % Complete                    89.8 % Complete                    90.6 % Complete                    91.4 % Complete                    92.2 % Complete                    93   % Complete                    93.8 % Complete                    94.5 % Complete                    95.3 % Complete                    96.1 % Complete                    96.9 % Complete                    97.7 % Complete                    98.4 % Complete                    99.2 % Complete                    100  % Complete                    Finished Projecting
-Finished Combination: 1 of 1.
-
-		COMPONENT: 3 of: 3		PDF: SimpleDoubleGauss_PDF0
-
-Constructing PDF Integral of: x Combination: 1 of 1. For component: sigma2 .	x: -20 <-> 20
-0.781% Complete                    1.56 % Complete                    2.34 % Complete                    3.12 % Complete                    3.91 % Complete                    4.69 % Complete                    5.47 % Complete                    6.25 % Complete                    7.03 % Complete                    7.81 % Complete                    8.59 % Complete                    9.38 % Complete                    10.2 % Complete                    10.9 % Complete                    11.7 % Complete                    12.5 % Complete                    13.3 % Complete                    14.1 % Complete                    14.8 % Complete                    15.6 % Complete                    16.4 % Complete                    17.2 % Complete                    18   % Complete                    18.8 % Complete                    19.5 % Complete                    20.3 % Complete                    21.1 % Complete                    21.9 % Complete                    22.7 % Complete                    23.4 % Complete                    24.2 % Complete                    25   % Complete                    25.8 % Complete                    26.6 % Complete                    27.3 % Complete                    28.1 % Complete                    28.9 % Complete                    29.7 % Complete                    30.5 % Complete                    31.2 % Complete                    32   % Complete                    32.8 % Complete                    33.6 % Complete                    34.4 % Complete                    35.2 % Complete                    35.9 % Complete                    36.7 % Complete                    37.5 % Complete                    38.3 % Complete                    39.1 % Complete                    39.8 % Complete                    40.6 % Complete                    41.4 % Complete                    42.2 % Complete                    43   % Complete                    43.8 % Complete                    44.5 % Complete                    45.3 % Complete                    46.1 % Complete                    46.9 % Complete                    47.7 % Complete                    48.4 % Complete                    49.2 % Complete                    50   % Complete                    50.8 % Complete                    51.6 % Complete                    52.3 % Complete                    53.1 % Complete                    53.9 % Complete                    54.7 % Complete                    55.5 % Complete                    56.2 % Complete                    57   % Complete                    57.8 % Complete                    58.6 % Complete                    59.4 % Complete                    60.2 % Complete                    60.9 % Complete                    61.7 % Complete                    62.5 % Complete                    63.3 % Complete                    64.1 % Complete                    64.8 % Complete                    65.6 % Complete                    66.4 % Complete                    67.2 % Complete                    68   % Complete                    68.8 % Complete                    69.5 % Complete                    70.3 % Complete                    71.1 % Complete                    71.9 % Complete                    72.7 % Complete                    73.4 % Complete                    74.2 % Complete                    75   % Complete                    75.8 % Complete                    76.6 % Complete                    77.3 % Complete                    78.1 % Complete                    78.9 % Complete                    79.7 % Complete                    80.5 % Complete                    81.2 % Complete                    82   % Complete                    82.8 % Complete                    83.6 % Complete                    84.4 % Complete                    85.2 % Complete                    85.9 % Complete                    86.7 % Complete                    87.5 % Complete                    88.3 % Complete                    89.1 % Complete                    89.8 % Complete                    90.6 % Complete                    91.4 % Complete                    92.2 % Complete                    93   % Complete                    93.8 % Complete                    94.5 % Complete                    95.3 % Complete                    96.1 % Complete                    96.9 % Complete                    97.7 % Complete                    98.4 % Complete                    99.2 % Complete                    100  % Complete                    Finished Projecting
-Finished Combination: 1 of 1.
-
-Writing Combinations:
-All_Data
-
-Data Written to File, Making Graphs
-
-Calculating Pull Values
-Value At: -19.8	is:	0.09085                    Value At: -19.4	is:	0.1234                    Value At: -19  	is:	0.1665                    Value At: -18.6	is:	0.2232                    Value At: -18.2	is:	0.2975                    Value At: -17.8	is:	0.394                    Value At: -17.4	is:	0.5185                    Value At: -17  	is:	0.6782                    Value At: -16.6	is:	0.8816                    Value At: -16.2	is:	1.139                    Value At: -15.8	is:	1.462                    Value At: -15.4	is:	1.865                    Value At: -15  	is:	2.364                    Value At: -14.6	is:	2.978                    Value At: -14.2	is:	3.729                    Value At: -13.8	is:	4.64                    Value At: -13.4	is:	5.737                    Value At: -13  	is:	7.049                    Value At: -12.6	is:	8.608                    Value At: -12.2	is:	10.45                    Value At: -11.8	is:	12.6                    Value At: -11.4	is:	15.1                    Value At: -11  	is:	17.98                    Value At: -10.6	is:	21.28                    Value At: -10.2	is:	25.04                    Value At: -9.8 	is:	29.27                    Value At: -9.4 	is:	34                    Value At: -9   	is:	39.25                    Value At: -8.6 	is:	45.04                    Value At: -8.2 	is:	51.38                    Value At: -7.8 	is:	58.27                    Value At: -7.4 	is:	65.74                    Value At: -7   	is:	73.82                    Value At: -6.6 	is:	82.59                    Value At: -6.2 	is:	92.21                    Value At: -5.8 	is:	102.9                    Value At: -5.4 	is:	115.2                    Value At: -5   	is:	129.5                    Value At: -4.6 	is:	146.7                    Value At: -4.2 	is:	167.6                    Value At: -3.8 	is:	193.1                    Value At: -3.4 	is:	223.7                    Value At: -3   	is:	259.8                    Value At: -2.6 	is:	300.7                    Value At: -2.2 	is:	344.9                    Value At: -1.8 	is:	390.1                    Value At: -1.4 	is:	432.8                    Value At: -1   	is:	469.4                    Value At: -0.6 	is:	496.2                    Value At: -0.2 	is:	510.5                    Value At: 0.2  	is:	510.5                    Value At: 0.6  	is:	496.2                    Value At: 1    	is:	469.4                    Value At: 1.4  	is:	432.8                    Value At: 1.8  	is:	390.1                    Value At: 2.2  	is:	344.9                    Value At: 2.6  	is:	300.7                    Value At: 3    	is:	259.8                    Value At: 3.4  	is:	223.7                    Value At: 3.8  	is:	193.1                    Value At: 4.2  	is:	167.6                    Value At: 4.6  	is:	146.7                    Value At: 5    	is:	129.5                    Value At: 5.4  	is:	115.2                    Value At: 5.8  	is:	102.9                    Value At: 6.2  	is:	92.21                    Value At: 6.6  	is:	82.59                    Value At: 7    	is:	73.82                    Value At: 7.4  	is:	65.74                    Value At: 7.8  	is:	58.27                    Value At: 8.2  	is:	51.38                    Value At: 8.6  	is:	45.04                    Value At: 9    	is:	39.25                    Value At: 9.4  	is:	34                    Value At: 9.8  	is:	29.27                    Value At: 10.2 	is:	25.04                    Value At: 10.6 	is:	21.28                    Value At: 11   	is:	17.98                    Value At: 11.4 	is:	15.1                    Value At: 11.8 	is:	12.6                    Value At: 12.2 	is:	10.45                    Value At: 12.6 	is:	8.608                    Value At: 13   	is:	7.049                    Value At: 13.4 	is:	5.737                    Value At: 13.8 	is:	4.64                    Value At: 14.2 	is:	3.729                    Value At: 14.6 	is:	2.978                    Value At: 15   	is:	2.364                    Value At: 15.4 	is:	1.865                    Value At: 15.8 	is:	1.462                    Value At: 16.2 	is:	1.139                    Value At: 16.6 	is:	0.8816                    Value At: 17   	is:	0.6782                    Value At: 17.4 	is:	0.5185                    Value At: 17.8 	is:	0.394                    Value At: 18.2 	is:	0.2975                    Value At: 18.6 	is:	0.2232                    Value At: 19   	is:	0.1665                    Value At: 19.4 	is:	0.1234                    Value At: 19.8 	is:	0.09085                    
-Making Plots
- FCN=6.35182 FROM MIGRAD    STATUS=CONVERGED      67 CALLS          68 TOTAL
-                     EDM=9.95687e-08    STRATEGY= 1      ERROR MATRIX ACCURATE 
-  EXT PARAMETER                                   STEP         FIRST   
-  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  Constant     3.85518e+01   5.57000e+00   5.27423e-03   2.77783e-06
-   2  Mean         1.40795e-01   1.11608e-01   1.33900e-04   2.50269e-03
-   3  Sigma        9.70457e-01   9.94725e-02   2.91069e-05  -7.35834e-03
-Projected
- FCN=6.35182 FROM MIGRAD    STATUS=CONVERGED      67 CALLS          68 TOTAL
-                     EDM=9.95753e-08    STRATEGY= 1      ERROR MATRIX ACCURATE 
-  EXT PARAMETER                                   STEP         FIRST   
-  NO.   NAME      VALUE            ERROR          SIZE      DERIVATIVE 
-   1  Constant     3.85518e+01   5.57000e+00   5.27423e-03   2.77839e-06
-   2  Mean         1.40795e-01   1.11608e-01   1.33900e-04   2.50284e-03
-   3  Sigma        9.70457e-01   9.94725e-02   2.91069e-05  -7.35828e-03
-
-
---------------------------------------------------
-
-Fit Review:		Status:	3		NLL:	28040.75646
-
-sigma                     : 1.9616         ±  0.067521     
-sigma2                    : 5.0622         ±  0.07406      
-f_sig1                    : 0.62791        ±  0.017421     
-
---------------------------------------------------
-
-
-Any Fit Results and Projection Outputs are Stored in: RapidFitOutput_20131009_193437
-
-RapidFit
-Ending time: Wed Oct  9 19:34:39 2013
-
-Goodbye :)

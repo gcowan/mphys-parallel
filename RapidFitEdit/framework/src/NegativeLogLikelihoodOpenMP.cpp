@@ -39,39 +39,52 @@ double NegativeLogLikelihoodOpenMP::EvaluateDataSet( IPDF * TestPDF, IDataSet * 
 	(void)number;
 	//Initialise the integral caching
 	//ResultIntegrator->UpdateIntegralCache( TestDataSet->GetBoundary() );
-
-	//Loop over all data points
+    omp_set_num_threads(Threads);
+    
 	double total = 0.0;
 	double integral = 0.0;
 	double weight = 1.0;
 	double value = 0.0;
 	DataPoint* temporaryDataPoint=NULL;
 	//bool flag = false;
-    ofstream myfile;
-    myfile.open("time.txt");
-    double time = omp_get_wtime();
     int numberOfPoints = TestDataSet->GetDataNumber();
     int numThreads;
     double * threadTotals;
     int threadNum;
-    #pragma omp parallel default(none) shared(threadTotals,TestDataSet,TestPDF,numThreads,numberOfPoints) private(value,temporaryDataPoint,integral,weight,threadNum) 
+    int lowerBound,upperBound;
+    double pointValue;
+    #pragma omp parallel default(none) shared(threadTotals,TestDataSet,TestPDF,numThreads,numberOfPoints) private(value,temporaryDataPoint,integral,weight,threadNum,lowerBound,upperBound,pointValue) 
 
     {
-        //Getting the number of threads
+        
+        
+        //Getting the number of threads using only the master thread
         #pragma omp master
         {
             numThreads = omp_get_num_threads();     
             //setting up an array to store totals for each thread
             threadTotals = new double[numThreads];
+            for(int i=0; i<numThreads; i++){
+                threadTotals[i] = 0;
+            }
 
         }
-
+        //Adding this barrier to make sure lower and upper bounds are not calculated before master thread sets numThreads
+        #pragma omp barrier
         //Getting thread number
         threadNum = omp_get_thread_num();
         
         //Now splitting up the loop
-        int lowerBound = (numberOfPoints/numThreads)*threadNum;
-        int upperBound = (numberOfPoints/numThreads)*(threadNum+1);
+        lowerBound = (numberOfPoints/numThreads)*threadNum;
+        //If last thread iterate upto end of loop
+        if(threadNum == numThreads-1){
+            upperBound = numberOfPoints;
+        }
+
+        else{
+            upperBound = (numberOfPoints/numThreads)*(threadNum+1);
+        }
+
 
         for(int i=lowerBound; i<upperBound; i++){
 	
@@ -90,49 +103,19 @@ double NegativeLogLikelihoodOpenMP::EvaluateDataSet( IPDF * TestPDF, IDataSet * 
 			    weight = temporaryDataPoint->GetEventWeight();
 		    }
 
-		    double pointValue= log( value / integral );
+		    pointValue= log( value / integral );
 
 		    if( useWeights ) pointValue *= weight;
 		    if( useWeights && weightsSquared ) pointValue *= weight;
 		    threadTotals[threadNum]+=pointValue;
        }
-       
-       //Making sure we iterate through all the data points
-       if(threadNum==numThreads-1 && upperBound<numberOfPoints){
-           for(int i=upperBound; i<numberOfPoints; i++){
-               
-		    temporaryDataPoint = TestDataSet->GetDataPoint(i);
-		    value = TestPDF->Evaluate(temporaryDataPoint);
-
-		
-		    //Find out the integral
-		    integral = TestPDF->Integral( temporaryDataPoint, TestDataSet->GetBoundary() );
-		
-
-		    //Get the weight for this DataPoint (event)
-		    weight = 1.0;
-		    if( useWeights )
-		    {   
-			    weight = temporaryDataPoint->GetEventWeight();
-		    }
-
-		    double pointValue= log( value / integral );
-
-		    if( useWeights ) pointValue *= weight;
-		    if( useWeights && weightsSquared ) pointValue *= weight;
-		    threadTotals[threadNum]+=pointValue;
-           }
-       }
-
+    
 	}
     //Now summing up all the totals
     for(int i=0; i<numThreads; i++){
         total += threadTotals[i];
     }
     delete threadTotals;
-    time = omp_get_wtime()-time;
-    myfile<<"The time it took to calculate the negative log likelyhood was: "<<time<<std::endl;
-    myfile.close();
 	if( false ) cerr << "PDF evaluates to " << value << endl;
 
 	//Return negative log likelihood
