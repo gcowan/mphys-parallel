@@ -1,0 +1,2622 @@
+// $Id: release.notes $
+
+2013/09/30 Rob Currie
+  - Moved the RapidFiIntegrator code over to use the MultiThreaded functions which are common to NLLThreadedNew this means that the multi-threading is taken care of elsewhere in a standardised way and not in an ad-hoc per-class basis
+
+2013/09/30 Rob Currie
+  - Resolved some strange circular dependencies which are constructed by rootcint on PPE machines, not sure why this happens as everything compiles with the same ROOT versions at CERN and locally for me but we should be aware of this
+  - Fixed minor bug in SWeighting code ans have modified the PDFs in the Framework such that the expected name of the PDF object is more clearly defined now that it's using the PDF macro
+  - Added the new Format nTuple for the 2011 analysis.
+     This produces the exact same results as in the 2011 1fb Analysis and uses the latest v6 code. Because the output is the same I see no need to add the fit output to svn.
+
+2013/09/29 Rob Currie
+  - Moved a LOT of code out of BasePDF into classes with their own interfaces, this is designed to allow for the structure of the BasePDF to be greatly simplified from a development and supportability perspective
+     This code exploits the use of public virtual inheritance to allow for BasePDF_Frameowkr and BasePDF_MCCaching to have their own independent interfaces which are picked up by the IPDF
+  - This has allowed for a substantial amount of nternal methods and objects to be removed from the BasePDF
+     The objects which are now explicitly used within the BasePDF correctly call protected or public methods with all member objects being private to the sub-classes
+  - These new BaseClass objects cannot be constructed but I suppose the use of the interfaces could allow for some code to be cleaned up
+  - Added additional check in PhaseSpaceBoundary to check for the DiscreteIndex corresponding to the correct PhaseSpaceBoundary instance.
+     This will very likely never have effected any major analysis, however it is now not possible for this exception to screw with things like normalisation.
+
+2013/09/26 Rob Currie
+  - Moved the 3 pdfs in framework to use the PDF_CREATOR macro this allowed for 3 methods to be removes from the XMLConfigReader
+
+2013/09/26 Rob Currie
+  - BREAKING BACKWARDS COMPATIBILITY
+    The PDFConfigurator object has once again been expanded to include the PhaseSpaceBoundary and PDFDaughters this allows for the NormalisedSumPDF, ProdPDF and SumPDF objects to be constructed using a more common interface
+      This also allows for more information to be available to the PDFs on construction in addition to allowing for Parameter Substitution to be used for FitFractions
+    This explicitly disallows the use of FitFractions within the PDFConfigurator when using a CommonPDF.
+      It is now suggested that people use ParameterSubstitions which makes it explicit where the fractions come from within nested sum PDFs
+  - All PDFs now support the <Label> tag which allows for the PDF label to be set in the XML to make life easier when reading some debugging statements
+  - Looking to move PDFs in framework to use the common PDF macro for construction and lookup to allow for the XMLConfigReader to have to know even less about PDFs.
+      The amount of code within the XMLConfigReader which was horribly arbritraty in dealing with PDFs has been dramatically reduced
+
+2013/09/25 Rob Currie
+  - Fixed Combined Mistag model, LOTS of debugging statements have been left in this class but shoudn't hinder performance...
+  - Removed some defunct code from PDFConfigurator  (Removed the only PDF using this code as it is defunct)
+  - Added some new handler functions for PDFConfigurator with the aim to be able to pass a single PDFConfigurator to the NormalisedSum and Prod PDFs to construct them
+
+2013/09/23 Rob Currie
+  - Adding initial implementation of Combined Mistag calibration class for v6 3fb measurement
+  - Added new method: FitAssembler::CheckInputObs to check the datasets which have been passed to the PDF to check that they are consistent
+      This will verbosely check the screen and exit if there are problems
+      This will check the 0th DataPoint and the PhaseSpaceBoundary to check that the required Observables are present in the DataSet and exit cleanly when the fit is not constructed correctly
+  - Added new v6 argument to allow the current code in head to pull in the combined mistag calibration object (default is NOT to do so) 
+
+2013/09/23 Dianne Ferguson
+  - Added the separate fzero class for combined fits with JpsiPhi (v5).
+
+2013/09/23 Dianne Ferguson
+  - Updated places in main, jackknife, goodnessoffit to get the output location from ResultFormatter.
+  - Updated OptimisedDoubleGauss so you can use parametersubstituion.
+  - Updated v5 bs2Jpsifzero; tidied up.  
+
+2013/09/20 Rob Currie
+  - Adding 1fb XML and DataSet for JpsiKK
+  - Moving v6 Code to use IMistagCalib interface to make switching between tagging calibrations easy and reduces the amount of hacking within the v6 PDF
+
+2013/09/18 Rob Currie
+  - Added TripleFixed time Resolution class
+  - Added improvement into FitAssembler to should about multiple missing PhysicsParameters at once, rather than aborting at the first missing parameter
+  - Added new tRes models to v6 to allow us to switch between models based on the XML
+      Moved a load of functions in the Resolution interface to be protected, nice structure which would be easy to modify in the future and works with v6
+      Testing the Double/Triple but they appear to be giving sensible NLL values so far
+
+2013/09/16 Rob Currie
+  - Stripped down v6 PDF and added example of new Resolution model usage
+  - Removed all reference to PseudoObservables, they were a nice idea, but were crashing and ultimately didn't work as hoped
+  - 'Moved' Resolution Model over to use an interface original class still in framework for testing and fzero v6 which is to be ported later
+  - Changed interface classes to have protected constructors to prevent them accidentally being constructed by a user
+  - Added simple Fixed timeResoltion Model which uses a PhysicsParameter to set the centre of the time res values
+  - Added initial implementation of Double Gaussian functions for per-event and Fixed time Res (these are yet to be tested)
+  - Some minor bugfixes
+
+2013/09/13 Rob Currie
+  - Added preliminary NLLThreadedNew class which makes use of the MultiThreaded functions which have now been somewhat debugged.
+       This works for the 1fb JpsiPhi analysis but has a performance penalty for very simple toys, this is being explored
+
+2013/09/12 Rob Currie
+  - Added cleanF and cleanU make options to clean the framework and utils folder binaries to save having to rebuild binaries and cleanP to clean only the PDF objects
+  - Changed the way that FitFunction is passed around the codebase to use the new IFitFunction, just makes the codebase a little more consistent
+  - 'Fixed' bug to do with numerical 1D integration, i.e. it no longer segfaults when running some of the tutorials
+  - Changed preprocessor in IPDF to make --Debug instances of RapidFit finish when called
+  - Added new MultiThreaded Evaluate and Integrate functions. These aren't currently tied into anything useful and haven't been tested but will be plugged into a new FitFunction and/or Integration method which uses DataPoints
+
+2013/09/11 Rob Currie
+  - Minimal changes equired to make RapidFit 'play nice' with ROOT 5/34/10
+       Removed GSL implementation of cerf, it didn't work as expected (probably never will in current form)
+       Code still sits in Mathematics but is never called
+       Added new faddeeva cerf implementation, gets exactly the same results as before in ROOT
+       Moved a load of Mathematics code over to use complex<double> rather than RooComplex
+       Added missing stl:: and headers to pdf source code to make them compile, no other changes to the underlying code
+
+2013/09/09 Greig Cowan
+  - Latest version of DP PDF.
+
+2013/09/03 Rob Currie
+  - Updating RapidPlot tool
+       To Add the "LHCb" or "LHCb Preliminary" stamps to LLscans you need to use the "--addLHCb" option when generating plots, this is in the RapidPlot --help
+       I have also scaled the font used on the 'z-axis' when constructing 2D correlation matricies with RapidPlot so that the legend axis doesn't scream numbers when generated.
+  - Updating old XML for 2010 analysis to be able to run on the PDFs in RapidFit as well as generate some of the old plots
+  - Added the ability for RapidFit to copy PDFs without using Copy Constructors.
+       I encourage the use of copy constructors where sensible, but in the case of some PDFs which are highly complex or contain a LOT of internal variables this can become painful to maintain when needed
+       In order to allow RapidFit to create a copy of your PDF using the constructor ONLY add the line:
+          "this->SetCopyConstructorSafe( false );"
+       to your PDF constructor
+       The PDF is also passed the PDFConfigurator object which allows you to use:
+          thisConfig->hasConfigurationValue( "RAPIDFIT_SAYS_THIS_IS_A_COPY", "True" )
+       to determine if your PDF is a copy, this can potentially allow you to cut out a lot of verbosity that is generated each time a PDF object is created
+  - I have also updated the lifetime tool which is used by the angular moment analysis, it now contains the code I used in running for my final thesis
+  - Added the ability to make some constructors quieter by passing an additional boolean argument to them
+
+2013/08/29 Greig Cowan
+  - Minor changes to DP PDF to try and make it more like Syracuse result.
+  - Changes to the way that the 4D angular acceptance is calculated.
+
+2013/08/23 Rob Currie
+  - Adding quick ROOT version code to the top of the binary output, took 30sec to implement, will save a lot of hassle when I need to run on strange systems...
+
+2013/08/22 Greig Cowan
+  - Was not calculating the angular acceptance correctly for mKpi due to incorrect use of the theoretical PDF. I was not multiplying it by the phase
+  space factor, meaning that the acceptance was just parameterising the phase space itself!
+  - Modified PDF to use the new coefficients.
+  - Modified DP PDF to read in Z angles directly from ntuple to avoid having to calculate them on the fly.
+
+2013/08/21 Greig Cowan
+  - Modified background parameterisation using different sideband defintion (not much change).
+  - Modified DPJpsiKaon such that only for resonances outside of kinematic limits do we rescale to m0_eff.
+
+2013/08/16 Greig Cowan
+  - Changed parameterisation of the NR term in the Dalit plot PDF. Simply leads to rescaling of the amplitudes.
+
+2013/08/10 Greig Cowan
+  - IMPORTANT: fixed the 4D Dalitz plot PDF. Now get consistent results with Syracuse.
+
+2013/07/29 Greig Cowan
+  - Found another bug in DPTotalAmplitude code. pR0 was no updated properly in MassShape.
+
+2013/07/18 Rob Currie
+  - Added more documentation to RapidPlot to advertise the fact you can regenerate an XML and the fitting arguments from any fit based on the .root that RapidFit saves in the output folder!
+      This just saved me searching for an old XML to regenerate a plot for the thesis so I should probably advertise this!
+      With a little refactoring it would be nice to store the possible output XML from RapidFit in the .root as well which can be extracted using RapidPlot in the future
+  - After speaking to Matt I've modified the combined Signal+PullPlot plots to look more like the standard LHCb output, i.e. title fonts have been resized
+  - Fixed stupid typo in lhcbStyle.C stored in the utils/src folder
+
+2013/07/18 Greig Cowan
+ - Fixed nasty bug in DPTotalAmplitude code. Class inheritance changed and better copy constructors written.
+ - Added effective resonance mass calculation for treatment of resonances outside of kinematic limit.
+
+2013/07/17 Dianne Ferguson
+ - Added Normalisation method to StudentT PDF.
+
+2013/07/16 Rob Currie
+  - Fixed 1D projection bug with jpsifzero
+       This was a subtlety to do with the pdf and the framework disagreeing over how nuisence parameters are delt with.
+       Framework expected the 'tag' parameter to be on the donotintegrate list and te pdf assumed this would be ignored due to it being a discrete observable
+       The framework now correctly moves ALL discrete observables onto the donotintegrate list from the phasespace regardless of what the PDF has told it.
+  - Fixed minor bug when using "--Debug"
+
+2013/07/12 Dianne Ferguson
+  - Added the missing terms from the copy constructor to the fzero v5 pdf - Fixed the problem with integrator test and projections. Added the v6 fzero pdf which uses the resolution model. Removed exit statements from the sliced acceptance. 
+
+2013/07/08 Rob Currie
+  - Added Option for "--DebugClass XMLConfigReader_TAG" this will dump the contents of ALL xml Tags and then cleanly exit and is intended for use with the --OverrideXML flag which is powerful/underused/broken
+
+2013/07/08 Conor Fitzpatrick
+  - Added a modified version of the jpsifzero_Signal_v5 pdf (jpsifzero_signal_v5a) that incorporates changes made in jpsiPhi_Signal_v5. Seems to partially fix integration issues with projections. 
+
+2013/07/05 Rob Currie
+  - Fixed bug in 1D Projections which was introduced when the multi-dim case was fixed a week ago
+
+2013/07/04 Rob Currie
+  - Fixed bad bug in fzero PDF where a pointer was being assigned to NULL rather than compared against... Fixing this as it causes segfaults
+  - Updating Assym.C to include systematic errors in quadrature, this now looks almost identical to the plot in the paper which is good
+
+2013/07/03 Rob Currie
+  - Added lhcbStyle.C and Assym.C to utils/src folder
+       These correspond to:
+       The current LHCb style from:
+       http://svnweb.cern.ch/world/wsvn/lhcb/Urania/trunk/RootTools/LHCbStyle/src/lhcbStyle.C R154683
+       A script to generate the delta_S-delta_perp plot for JpsiPhi.
+       This is just a simple script that plots the results but is an example of how it's done for repeated analyses
+  - Realised that Minos in Minuit2 is better than Minuit and actually returns the full set of errors for the 1fb JpsiPhi analysis where Minuit always fails on the final parameter
+       I don't know if this is a bug in the way that we have implemented Minuit or the way in which we are calling Minos but as we can simply switch to Minuit2 in these situations I don't care
+       I've now also added the MinimiserConfiguration flags MinosErrors and NoHesse to the class to allow for this to be configured from the XML like with Minuit
+       For reference the tutorials/OptimisedDoubleGauss.xml has been updated to 'just work' with Minuit2 and Minos
+
+2013/06/30 Rob Currie
+  - Had to fight with a broken version of ROOT on a system so had to touch a LOT of pdfs to make sure that std::isnan points to a real object...
+       This is stricty working around a ROOT bug but as it's in a version of ROOT which was stable for a long time I think it's best we work around it
+  - Commented out the TGLStopwatch class unless building with make debug
+       This isn't ideal, but the current builds on lxplus are currently not all being built correctly and link against non-existant libGLEW libraries
+       This is an 'advanced' feature and this was only implemented to get sub-second time meaurements of the evaluate mathod in the FitFunction
+       As it's advanced disabling this is the best approach as it allows people to build RapidFit on lxplus without thinking
+
+2013/06/29 Rob Currie
+  - Fixed Projections for complex PDFs
+       Only reason I was not able to reproduce this in simpler XML is that these use much simpler code than the full numerical integral at each point
+       We could do with a nice multi-dim multi-param XML in the tutorials folder to help catch problems like this
+       Code to cache the GSL points was unsuited to the projections as the stored dataponts didn't match the projection phase-space
+       This Should NOT effect any GSL numerical fits, but will effect the projections when using the GSL code
+       Users would have had to have a very complex set of conditions to notice this effect unless they were integrating with a low number of points in the phasespace (<1000)
+       As it stands this was only exposed in JpsiPhi by accident and in conflict with another bug which is now fixed
+  - Fixed minor bug in fzero PDF for conditions where the PDF would crash during construction
+       Also expanded flat timeAcc to 20fs from 14
+  - Changed Default behaviour of v6 PDF to project 'something' from EvaluateComponent rather than return 0.
+       Was this always the case as I don't remember coding this behaviour into the PDF!?!
+  - Fixed minor bug in autosaving an XML where the Yield rather than the number of events to be read in was written to the DataSource Section of the XML
+  - Added a call to request the pointer to the currentPoint object in the IntegrationFunction which corresonds to the DataPoint which was last constructed by this class to be passed to the PDF
+       This should hopefully help with debugging in future
+
+2013/06/17 Rob Currie
+  - Fixed numerous bugs in PolyPDF, hopefully this should now work and an example .xml is in the tutorials folder
+
+2013/06/09 Rob Currie
+  - Fixed bug due to unitialized output folder
+  - Added some .C outputs to RapidPlot output
+
+2013/06/08 Rob Currie
+  - Added 30sec hack to give some more update on current fit status
+
+2013/06/07 Dianne Ferguson
+  - Added --SendOutput <folder name> command line option, allows the user to assign the name of the folder into which the output is written.
+
+2013/06/06 Rob Currie
+  - Moved GSL initialization of integral points to get/set method which should buy some speed improvements and makes the GSLPseudoIntegrator cleaner
+       Tested on OptimisedDoubleGauss GSL projection in the tutorials folder and this feels like it's running faster.
+
+2013/06/05 Peter Clarke
+  - Added the next version of the J/PsiPhi PDF: Bs2JpsiPhi_Signal_v6
+    This implements a contained ResolutionModel and as a result lots of other code is now commented out
+  - As part of the above added ResolutionModel into framework
+  - Also fixed several GSL compile errors for users who dont have GSL   
+	M       pdfs/src/DPTotalAmplitudePDF_withAcc.cpp
+	M       pdfs/src/DPTotalAmplitudePDF_withAcc_withBkg.cpp
+	M       pdfs/src/DPBackground.cpp
+	M       pdfs/src/Bd2JpsiKstar_sWave_Fscopy.cpp
+
+2013/06/01 Rob Currie
+  - Fixed non-GSL compile for Pete
+
+2013/05/28 Rob Currie
+  - Added additional '--helpProjections' which prints the ComponentPlotter::XML() function which contains a relatively complete list of Projection XML argumnets
+
+2013/05/26 Rob Currie
+  - Reduced verbosity in telling the user where there isn't data in the discrete parameter space....
+      Instead the User will only be informed where the dataset that they requested is (this is easier to read when doing complicated things like 6 bins in UB+B...)
+      This reduces the excess verbosity when sWeighting a dataset with many Discrete Observables required to be present in the final tuple
+  - Renamed "SWeight2" parameter to "SWeightSq" to remove future confusions (This was only added as an exercise when we were testing the SWeighting Code in RapidFit a few months ago... and we found no bugs)
+      Code relating to this in the SWeightPrecalculator can probably be removed in the future and replaced with the final line to calculate the SWeightSq=sWeight*sWeight
+  - Renamed CovMatrix to CorrelationMatrix which is the correct name for the latex file written out from fits
+      Renamed some methods in ResultFormatter to take this into account.
+      The Actual matrix stored in any .root is STILL the covariance matrix and requires to be transformed to get the correlation matrix
+  - Added an option to ignore multiple Combinations present in a dataset in Projections and an XML option for adding a default value for the Discrete Observable
+      <PlotAllCombinatons>False</PlotAllCombinatons> can almost double the speed of untagged projections
+      <DefaultDiscreteValue>0.</DefaultDiscreteValue> provides an explicit value to replace PhaseSpaces with >=2 combinations of values
+      (default is 0. i.e. untagged in the case of tags, but this can be user modified if needed)
+  - Added <XaxisTitleScale> and <XaxisLabelScale> and corresponding Yaxis tags to ComponentPlotter XML
+      This allows the user to scale the relative label/title sizes by a relative amount, none of this annoying ROOT font size nonsense
+      These are by default 1. but can be set to any value (I suggest anything more than 0.8-1.2 becomes a bit extreme).
+      By default the LHCbStyle is used everywhere but this is required to make some plots more equal than others....
+
+2013/05/24 Greig Cowan
+  - Updated GoodnessOfFit so that it prints out some more helpful messages during computation and a ROOT file containing results.
+
+2013/05/23 Rob Currie
+  - Based on something I learnt writing my thesis I've corrected the estimated error from the yield of a weighted dataset
+      (I'm not sure what the old code was calculating, but it was obviously wrong...)
+  - Fixed minor typos and made minor changes in utils folder
+
+2013/05/22 Rob Currie
+  - Added simple tool 'plotDists' to the make extra build list and svn
+      This is a simple tool for plotting the contents of an nTuple in a well formatted way quickly.
+      The tool will take multiple arguments and has quite a few 'sensible' defaults hard-coded in a way that are easily changeable
+      I was going to have to write a script of similar length for some plots I need for my thesis so made this as a little exercise in the benefits of modular programming
+      It should be easy to expand this tool if anyone wants to use it as most of the code should be self documenting
+  - Expanded EdStyle with a few missing Observable Names from the Jpsi analysis
+  - Added an additional line telling you where the output from your fit has been stored to make my life easier when running many fits
+  - Removed some pointless code in ComponentPlotter
+
+2013/05/21 Greig Cowan
+  - Changed number of terms in efficiency parameterisation for DP PDF.
+  - Found bug in Mathematics when plotting projections of parameterised efficiency/background.
+  - Added DPTotalAmplitudePDF_withAcc_withBkg
+
+2013/05/15 Rob Currie
+  - Added OptimisedGauss PDF to keep the SimpleGauss PDF as simple as possible so people can focus on RapidFit PDF structure
+  - 'Fixed' the GetDataNumber( DataPoint* input ) where input!=NULL
+      This replaces about 50 lines of code with 2 functions which makes life a lot simpler to understand.
+      This new code makes no attempt to cache lookup results and is potentially an extremely expensive operation to call when input!=NULL, but it's only used in non CPU limited code elsewhere atm
+  - Added additional output when reading in data which informs the user how many datapoints are in each discrete combination
+  - Added pair< vector<string>, vector<double > > PhaseSpaceBoundary::GetDiscreteInfo to work with IDataSet::GetDiscreteSubSet to make life easier when wanting the subset of data for a certain discrete observable combination.
+  - Minor improvement ot the Y axis title in ComponentPlotter and updated the code to use the cleaner IDataSet::GetDiscreteSubSet interface
+  - Updated XML in tutorial directory to fix broken XML
+
+2013/05/15 Greig Cowan
+  - Updated code for calculating acceptance/background coefficients.
+  - Changed default QRNG for GSL integration.
+
+2013/05/14 Rob Currie
+  - Fixed some more isnan->std::isnan transforms which break the build for me
+  - Committed fix for bin width label in Projections... I don't know why but this was another case of ROOT not doing what I naively expected it to
+
+2013/05/09 Rob Currie
+  - Added more helpful debug output to SlicedAcceptance::getValue( Observable*, double ),
+       I recommend using this function over SlicedAcceptance::getValue( double ) as it is safer and explains more, but the latter is much simpler code
+       (JpsiPhi is already using this and has been doing for many months, an in this case all that happens is that an exception is caught here and useful output is given)
+    Added simple functions to expose the Max/Min of a SlicedAcceptace Histogram to the end user. This may be useful to people using them in PDFs.
+  - Made sure that Numerical Integrals over the whole NormalisedSumPDF useGSL where requested. Until now only the components ran GSL, the whole PDF was always being integrated by ROOT
+  - Fixed minor bug in Histo_Processing in utils, added some extra functionality to some static routines but default behaviour is unchanged
+  - Added Per-Event object to utils, has to be built with 'make bin/Per-Event' or 'make extra'
+       Added extra binaries to 'make extra' in Makefile as most people will never use them, but if they're needed they're built without hassle
+       These are small programs designed to do some level of post-processing with RapidFit output files, at the very least they serve as examples of what can be done with the static routines I've written
+
+2013/05/07 Greig Cowan
+  - Added StudentT PDF.
+  - Added background PDF for Dalitz studies. Using 4D parameterisation of the background.
+
+2013/05/02 Greig Cowan
+  - Added code for angular momentum-5 barrier factor.
+  - Modified Dalitz PDF to include spin-5 Kpi resonance.
+
+2013/05/02 Rob Currie
+  - Had a moment of inspiration, fixed bug in PseudoObs code which caused excessive memory usage I couldn't account for
+       Mem usage of v5 pdf now down from 2.G to 400M !
+       This wasn't a mem-leak in the traditional sense, memory was allocated and freed where expected, it was just the case that too much was being allocated compared to what was being used
+       Despite this no considerable performance improvement, only a coding one, this leads me to believe we are currently limited only by the CPU usage
+       (Cleaned up PsuedoObs code but nothing has changed regarding interfaces to the PDF)
+  - Moved all instances of 'isnan' over to 'std::isnan'
+       This touches a lot of classes but something has changed so that the combination of the latest gcc and the latest root argue over where isnan is actually implemented
+       This is only a coding style change, not a functional one.
+
+2013/05/01 Greig Cowan
+  - Added code for angular momentum-4 barrier factor.
+  - Modified Dalitz PDF to include spin-4 Kpi resonance.
+
+2013/04/30 Greig Cowan
+  - Modified code to calculate efficiency parameterisation to now work in 4D.
+  - Modified Dalitz PDF to use 4D efficiency (mass and angles).
+
+2013/04/22 Pete Clarke
+  - Fixed a BUG in the Mathematics::<transversity angle functions>  f8 was WRONG ?  How did this happen
+    See comment in code where a sin should have been sin^2.  Luckily we dont use transversity any more.
+  - Added a new version of the J/PsiKstar pdfs to allow helicity/transversity basis pdfs/src/Bd2JpsiKstar_sWave_Fscopy.cpp
+    Currently i leave it with a silly name as it needs a lot of work before its a nice pdf - but after the paper. 
+    We will rename it when there is a nice new version.
+
+2013/04/22 Greig Cowan
+  - Added protection around GSL statements in Mathematics code.
+
+2013/04/21 Greig Cowan
+  - Added protection around GSL statements in Bd2JpsiK* PDF.
+
+2013/04/18 Rob Currie
+  - Changed coordinates of some Legends to play nice with LHCb style
+
+2013/04/17 Rob Currie
+  - Added new scripts for getting output from a Driac JobID, this has changed so the old .py script no longer works but the new .sh script works as before
+    Added a ganga script to run a single fit which also runs correctly interactively, however you need to pass the full .xml path (not sure how/if ganga interactive uses sandboxes, but it runs interactive jobs ok)
+
+2013/04/17 Greig Cowan
+  - Added code for calculating parameterisation of angular efficiency using Legrendre polynomials and spherical harmonics
+    for Bd2JpsiK* and subsequent visualisation. Not completely generalised yet but appears to work.
+
+2013/04/12 Rob Currie
+  - Committing changes to the .py scripts in the new_scripts folder to make them work under ganga 6.x
+    This required fairly minimal changes and as far as I know nothing major should break, but be aware teh decision has been to make the scripts 6.x compatible only
+       To get them to run on ganga 5.x i.e. lxplus and submitting to grid change the functions used for requesting job output as this was a major change between 5 and 6 (old code is simply commented out in file)
+
+2013/04/10 Rob Currie
+  - Added Get/SetComponentStatus function to BasePDF
+    This is not intended to be overloaded but we need to communicate that -ve integrations are sensible down to the BasePDF level.
+    This required adding methods to the NormaliseSum, Prod and Sum PDFs to propagate this request.
+    Unlike the Interface class where we want to be generic to this test was completely removed the BasePDF integration test is useful in >99% of situations
+  - Fixed Bd2JpsiK* to have total denominator at all times which is the correct thing to do for component plots
+    Also disabled thow statements when componentIndex != 0, and replaced all exits with throws (multiple exits in multiple threads, ALWAYS makes for horrible segfaults)
+  - Modified defaults for some parameters to be -99999. rather than -999. as I ran into a situation with -1000 not being picked up and triggering default behaviour
+
+2013/04/10 Greig Cowan
+  - Added projections to the Bs2JpsiK* PDF.
+
+2013/04/01 Rob Currie
+  - I wanted to plot a -ve component to a PDF and have to come to the conclusion that protecting the PDF integrator from -ve numbers is a bad thing.
+       The Integrators are still 'protected' from nan and inf and other problems, however -ve integrals are real and make sense for components of full pdfs (and other uses)
+       YOUR PDF SHOULD NOT (NORMALLY) BE -ve!!!
+       if you believe this should be protected for in RapidFit un-comment the code at around line 275 in the IntegrationFunction class which replaces -ve values with 0.
+  - Added the ability for the jpsiphi v5 to plot all 10 terms as individual projections. (Was just something I wanted to try and prove...)
+  - Added a single line of output to trace the seed being used by RapidFit instance (if not 0 this makes everything guaranteed reproducible)
+
+2013/03/25 Rob Currie
+  - Changed the Style to be closer to current EB
+  - Added a helper functions to get common LHCb EB standard variables (less code duplication)
+  - Moved all of utils and ComponentPlotter to use as much of the common style in EdStyle as possible.
+  - RapidLL uses a different offset with the Y-axis and the Rapid2DLL tool uses a custom Legend position and text size but is similar to the 'default'
+  - Changed code to use the default TCanvas size to match the 'expected' LHCb style
+
+2013/03/20 Rob Currie
+  - Got annoyed by the hundreds of output folders I was getting so made some modifications to pull all output into one "RapidFitOutput_..." directory
+       This replaces the OutputLatex_... folder name, but NOT the content
+       I have added the default fit output to be stored from the job at the same time (this includes the runtime args, xml, final results and correlation matrix etc...)
+       This is where your output data is also stored for projections. 'where have my beautiful projection plots gone?' they've just moved to make managing your files easier
+       This doesn't effect the output from scans or from toys which are still better controlled by the user imo!
+  - Added a new feature to lock RapidFit from multi-threading when using the lib build
+       (running using multiple threads on a distributed system is bad... we break load management and get noticed by site admin!)
+       This has been handled through a static private member variable and get/set methods within the RapidRun class
+       (this is 'global scope' coding but it's close enough to OO and only uses a global boolean stored in a safe place)
+       Also, this stops projections running on multiple nodes when batch submitting (this burns CPU which is lost)
+
+2013/03/08 Rob Currie
+    (This mainly consists of fixes I needed to implement to make pretty plots for the thesis and comprises about a month of minor bugfixes I have in my private branch)
+  - Added ability to project with LogX using <LogX> XMLtag (this will scale pull plots to match data in X axis only)
+  - Added const to SlicedAcceptance code
+  - Added const and knowledge of Projection Observable Name to ComponentRef
+    (This will beome important in future, I'd just never considered a use case until phiphi)
+  - Improved readability of ParameterSet operator== method
+    (doesn't appear to impact performance but is now a lot easier to understand)
+  - Added missing All Combinations overlay plot from ComponentPlotter
+  - Added additional All PDFs overlay plot in OutputConfiguration which plots the output from all ComponentPlotter instances
+  - Added debug statements to code
+  - Added a check in TFoam to make sure PhaseSpace is compatible with PDF before wasting time initializing the function
+  - Added ability to configure Combination name strings from XML <CombinationNames>
+  - Fixed mem-leak in Interface class to ROOT
+    (This didn't appear serious but is better safe than sorry)
+  - Added UseSteppedProjection to the Exponential class. This allows Projections to plot the average occupancy per acceptance slice (if the acceptance histo is sorted)
+    This has to be turned on but is useful as it allows for projections showing that the acceptance function well matches in data rather than being sliced exponential functions in each bin
+    (This was prompted after the work was done for phiphi after a question from a referee about time acceptance function)
+  - Added helper functions to SlicedAcceptance to avoid people re-inventing the wheel too much if they look to implement something like UseSteppedProjection in their PDF
+    (these include a slightly more optimal improvement to the SlicedAcceptance codebase with break/continue lookups which should add a speed factor to people with this bottleneck)
+  - Fixed a few compiler warnings so some code shows explicit casting of objects
+  - Fixed a bug in PDF_THREAD_LOCK... your code will now fail to compile if you mis-use this rather than running and then simply hanging forever
+  - Changed v5 to NOT use hard-coded DEBUGFLAG object... (Debugging is left ON by default) We can now turn off the debugging at runtime which is VERY useful as it silences the PDF during projetions
+    (PDF has been benchmarked against 1fb paper and no result has changed)
+
+    Will PDF authors PLEASE avoid using '#define' to declare objects it can cause strange problems
+    (If you frequently want to turn on/off a piece of code consider using a ConfigurationParameter in your XML rather than (re)compiling code)
+
+
+2013/02/17 Rob Currie
+    (Got bored Friday evening so made some improvements to the existing codebase...)
+  - Added changes to Makefile to automatically build in GSL components by default
+       if gsl-config is in the users $PATH then RapidFit will be compiled with the GSL optional Integrator.
+       if gsl-config is not in the users $PATH then if the GSL integrator is requested RapidFit will fall back to the non-GSL method.
+  - Added RapidFitIntegratorConfig class which contains information to configure the RapidFitIntegrator
+       This class contains definitions of the various default configuration options for a RapidFitIntegrator instance
+       ALL variables that have defaults can be changed at runtime
+       (New Function in RapidFitIntegrator of SetUpIntegrator has been defined to change objects based on the new Configuration being passed)
+  - Changed IPDF interface:
+         virtual void SetUseGSLIntegrator( bool input ) = 0;
+    to:  virtual void SetUpIntegrator( const RapidFitIntegratorConfig* thisConfig ) = 0;
+       This means that the RapidFitIntegratorConfig can carry complex configuration options to the RapidFitIntegrator object
+  - This change in the IPDF has been propagated to the Sum/Prod/Norm PDF instances as well as the BasePDF this should NOT effect any user PDFs unless the user has their own Integrator usage
+  - Introduction of RapidFitIntegratorConfig has meant that the interface from XMLConfigurationReader has changed
+       This also means that code in the FitFunction classes has changed to allow the full Integrator Configuration to be propogated
+  - Wrapped GSL implementation of time-Gaussian convolution in Mathematics inside __RAPIDFIT_USE_GSL_MATH
+       This code is used when 'make gsl' is called but the standard build uses __RAPIDFIT_USE_GSL to build the custom Integral objects
+  Now for the fruits of this:
+  - Added new XMLTag <FixedIntegrationPoints> this controls the number of integration points used by the GSL integrator
+       This can be used within the FitFunctionConfiguration and Projection XMLTags
+       This number is only 10000 by default as this seems to give reasonable results whilst not being too CPU consuming
+  - Added new Threads XMLTag to the Projection code
+  - Added new UseGSLNumericalIntegration XMLTag to explicitly enable/disable GSL in Projections
+       GSL projections using 4 threads are now enabled by default. This is faster and has been tested with jpsiphi for the 1fb result
+  - Fixed a 'bug' in the SlicedAcceptance class which was causing projections to drop the top edge of fits involving projections
+       This was a subtle bug that caused by avoiding 'double counting' events on bin edges but actually caused the top edge of the last bin to be lost
+
+2013/02/15 Rob Currie
+  - Updated lifetime tool to improve plots
+  - Moved standard LHCb stamp to the left of the Canvas and added AddRightLHCb boolean XML tag to add a left/right LHCb Stamp
+    (could easily be expanded to introduce the option for stamps on the lower half of the canvas)
+  - Fixed bug in multi-threaded components so now instead of spewing RAM the thing is actually several orders of magnitude faster than the simple projections
+
+2013/02/07 Rob Currie
+  - Fixed bug in FC analysis when using separate alpha parameter not included in the fit
+  - Fixed code around FitResult and FitResultVector to protect objects with const as much as possible/sane
+  - Added XML and runtimeArgs to the output XML file which is small extra overhead to allow you to be able to regenerate an analysis very easily
+  - Added --RestoreXML and --Summarise to let you know what is stored in these objects in the output ROOT file
+  - Expanded some warnings in the codebase to include likely reasons why RapidFit is about to exit which should help with debugging
+  - Fixed bug in v5 that caused some complex projections to hang
+  - Fixed bug introduced in handling completely fixed FitResults (present before now, but only exposed due to another bugfix)
+
+2013/02/02 Rob Currie
+  - Enabling multi-threaded GSL integration. I didn't change any of this code and was surprised to see it 'just work'.
+    Added the ability to request number of threads in XML for projections
+
+2013/02/01 Rob Currie
+  - Cleaned up some ComponentPlotter code
+  - Added the output for the Final plot which should make overlaying the plots easier.
+
+2013/01/31 Rob Currie
+  - Gave Minuit2 code a kick, gives same results for jpsiphi 1fb paper :D
+  - Changed way that Toy_Study assembles the free parameters in RapidPlot to ignore parameters with a wholey <=0. error as this means that parameter is fixed/ignored
+  - Changed the background of some scripts in RapidPlot which should speed up the plots and ignore plots we don't care about by design
+
+2013/01/30 Rob Currie
+  - Fixed performance bug in BasePDF to do with debugging
+  - Fixed bug with Alpha XML tags causing crashes which take too long to debug
+  - Fixed bug in v5 which causes the projections to hang. This doesn't fix anything but avoids the code causing the problem
+  - Fixed bug in v5 which was causing component not to be projected including time acceptance
+  - Fixed a nasty bug in RapidRun which was causing the runtime arguments to be garbled in memory
+  - Re-written ParseCommandLine to use a vector of strings rather than an int and char* [] which has required more changes than I would like, but this is much better quality code
+  - Modified the main function to intercept the argc, argv from runtime and assemble a vector of strings to pass to the RapidFit method
+  - Removed possible rare, small memory leaks but every little helps.
+
+2013/01/29 Rob Currie
+  - Updated plots in RapidPlot. These are changes in the Plotting code to improve the general quality of the plots, but the EdStyle style is still close to the official style
+  - Fixed some bugs in ComponentPlotter such as performing a deep copy in place of a deep copy by reference
+  - Fixed a minor memory leak in ComponentPlotter
+  - Fixed a bug where non-pull plots were being incorrectly overwritten
+  - Now correctly writing unNormalised and Normalisation to ROOT file to check raw unNormalised PDF projection
+  - Fixed bug in DebugClass to do with Debug Copy constructor. Some classes could be accessed from runtime arg, some could not...
+  - Added a few more minor debug output statements
+
+2013/01/27 Rob Currie
+  - Adding fix to XML output from the FitFunctionConfiguration to correctly setup the fit as a Weighted fit with an appropriate alpha
+  - Changed the ComponentPlotter to use the user defined alpha rather than forcing it to be recalculated on a per-dataset basis.
+  - Modified v5 to not complain during Projections
+  - Added --disableLatexOutput to the runtime arguments, useful when doing fast development and don't want to save the output
+  - Minor verbosity changes
+
+2013/01/25 Rob Currie
+  - Added a big chunk more documentation
+  - Some basic fixes here and there removing unused objects and fixing extremely obviously broken code
+  - Changed ComponentProjections to only scale the PDF to the data rather than the half scaling of both data and PDF when using sWeights
+    This involved moving around a few things as well as defining the PDF2DataNormalise method in ComponentPlotter which cleans up some code
+  - Added some helper functions to expose and store more internal objects in alpha-scaling from per-event Weights
+  - Cleaned up comment blocks
+  - Fixed crash in RapidPlot dur to NULL pointer being addressed
+  - Added RapidFit lib back to the default build requirements
+  - Added Help and more runtime configure options to RapidPlot
+  - Added some checks to warn about bad toys in RapidPlot
+  - Improved code for plotting the correlation Matrix stored from RapidFit
+
+2013/01/20 Pete Clarke
+  - Added new Gamma-DeltaGamma constraint with correlation. Its called "Gammas-DeltaGamma-1fbPaper"
+  - Added new <ConfigurationParameter> to allow to add the relative offset to Gamma coming from the beta factor. 
+    It is used in this senset you want the Minuit fit parameter to be the true Gamma then you provide a positive offset.
+    This will be added to the Minuit fit parameter internally and the higher number will be used in the pdf
+    <ConfigurationParameter>OffsetToGammaForBetaFactor:0.0xx</ConfigurationParameter> 
+
+2013/01/13 Rob Currie
+  - I've re-written the code to calculate chi2/nDoF for the full fit. This doesn't have the problems associated with the previous method.
+    This code seems to give numbers which are more sensible and in agreement with the observed plots
+
+2013/01/09 Greig Cowan
+  - Added in the new angle calculating code for DP PDF.
+  - Fixed bug when constructing spin-3 Kpi resonance.
+  - Modified GoodnessOfFit code to deal with (s)weighted data. Not completely general, so be careful.
+
+2012/12/22 Rob Currie
+  - Removed Error quantity from Observable interface, this is defunct and we have a 1-1 mapping between Observables and quantities on disk, this includes Measured errors as Observables in their own right
+    (besides we were ALWAYS assigning the value to be 0 which is meaningless)
+  - Made improvements to RapidPlot for toy studies and improved some back-end code there
+  - Made some improvements to the lifetime_tool which is used in projection studies for JpsiPhi
+
+2012/12/21 Greig Cowan
+  - Added spin-3 K* resonance to DP PDF, using the new code from Michal for the Wigner functions.
+
+2012/12/18 Rob Currie
+  - Modified BinWidth text in ComponentPlotter
+  - Added <NSigma> XMLTag to the MinimiserConfiguration to allow the size of the error in NLL to be controlled from the XML
+
+2012/12/14 Rob Currie
+  - Added patch to backport RooMath fix to earlier versions of ROOT
+  - Added bin width to the Y axis label of projections
+
+2012/12/12 Rob Currie
+  - Improved handling of 0 (or -ve) sized datasets such that they are not added to the PhysicsBottle in the FitAssembler and so don't go any further
+       This avoids adding any free non constrained parameters to the fit at any later stage, thus removing any problems of adding/removing 0 sized datasets during fit development
+  - Averted segfault in sWeighting code which occurs when calling the Integrator test (also avoids un-needed calls to integrator test)
+  - Improved some warnings
+  - Added PolyPDF which constructs a polynomial PDF which takes the ConfigurationParameter: "Order" which governs what order the polynomial is and what parameters it requires all called Poly_n where n<= Order
+
+2012/12/11 Rob Currie
+  - Added ability to turn use of splines off by default in projections. by default they're on
+  - Added Flat and Box PDF for simple fits
+  - Added some bugfixes to utils directory to make .C scripts work
+  - Changed 0 sized dataset bugging to stop after a few calls to stop spamming the user
+  - Adding lifetime_tool which is used to extract gammaH gammaL from an angular moment analysis for jpsiphi
+
+2012/12/11 Rob Currie
+  - Added SingleNormaliseWeights to calculate a single global alpha based on per-event weights
+  - Added Components to LogNormal PDF
+  - Made modifications to OptimisedDoubleGauss PDF to use any central value
+
+2012/11/28 Rob Currie
+  - Fixed bug to do with Projections for pdfs with strong acceptance functions
+  - Fixed a bug in Observable class to do with anything involving communicating with ROOT when making use of caching technology
+  - Added a 2nd stopwatch class TGLStopWatch to watch individual function calls when talking to Minuit this offers sub-sec timing rather than using stl object
+       This requires linking against an additional library
+  - Improved writing out from VectoredFC, and in general by adding an additional warning of a copy bug of FitResultVector objetcs.
+  - Fixed bug to do with writing extra info to output files (icing on cake type data...)
+  - Changed RooMath to initialize according to defaults. If anyone wants to explore tweaking this they should only go for finer resolutions
+  - May (in future) comment out GSL replacement for RooMath now that it can be addressed safely in a threaded environment
+  - Made some extensive changes to improve Exponential class to enable new features in a tested way and the normalisation is now performed 'correctly' for the double expoential resolution case at the cost of the simpler case
+  - Minor bugfixes
+  - Fixed Some MemLeaks and improved the ability of the '#' character to comment out xml
+
+2012/11/26 Greig Cowan
+  - Fixed compilation bugs in DPHelpers for Z angle calculating code.
+
+2012/11/26 Rob Currie
+  - Reduced ROOT verbosity by default in main
+  - Fixed bug in minor angularAcceptance code
+  - Fixed bug in ComponentPlotter
+  - Added SegFault() function to DebugClass which allows you to call a SegFault on demand to get a backtrace from your current position
+
+2012/11/22 Rob Currie
+  - Removed the need to thread-locking all of the RooMath calls which has lead to 2-3x speed improvement in JpsiPhi
+       The class intiialization is not thread-safe so the initialization needs to be manually protected and called, but the calculations appear to be thread-safe
+       Tested on the final JpsiPhi sFit XML for the 6bin 1fb UBB analysis and it reproduces the expected results so is safe
+
+2012/11/21 Rob Currie
+  - Fixed bugs in DebugClass usage
+  - Fixed .C output from ComponentPlotter
+       Generated Code is not 100% human readable due to auto-generated names inside RapidFit&&ROOT but it allows you to modify the plot after it's been produced
+
+2012/11/20 Rob Currie
+  - Fixed a bug to do with missing parameters in the XML for the PDF to do with Generation
+  - Changed the code to do with Debugging so that it is MUCH simpler and 'just works'. We don't care about performance within Debugging Code (too much)
+
+2012/11/19 Rob Currie
+  - Fixed Bug to do with ResultParameterSets not being 'aligned' from Fit to Fit in the output
+  - Changed output Datasets to use TTree
+
+2012/11/18 Rob Currie
+  - Fixed bug to do with Projections
+  - Changed RapidFit Output to use a TTree Output rather than a TNtuple.
+       This has been written to swap out the TNtuple for the TTree so should be transparent
+
+2012/11/17 Rob Currie
+  - Fixed bug in Normalisation Caching that was introduced on 2012/11/11
+  - Changed some code in Foam to be more explicit for the sake of FC studies
+  - Changed PseudoObservable Code to not use pointers, code run is a little bit faster
+
+2012/11/16 Greig Cowan and Joel Bressieux
+  - Added NR component to DPTotalAmplitude.
+
+2012/11/11 Dianne Ferguson
+  - Updated LLB to include 1/tau factor for syracuse repeat.
+  - Included the new time acceptance file for syracuse repeat.
+  - Updated the jpsifzero v5 pdf to working version.
+  - Included test version of jpsifzero v5 pdf.
+
+2012/11/11 Rob Currie
+   - Cleaned up some bugs in SaveFitXML
+   - Stored some extra information in DataSetConfiguration class
+   - Cleaned up PDF labelling
+   - Added new comparison operator for ParameterSet. This checks the LHS against the RHS. The comparison is true if the RHS contains all Parameters in the LHS and they're identically valued
+   - PDF cache is only unset when a Physics Parameter for the PDF in question is changed. Of course this doesn't effect PDFs with caching requested to be turned off
+   - Fixed some basic bugs in hiding unwanted output
+   - BurnToROOT now outputs 2 files one with and one without the timestamp
+
+2012/11/08 Rob Currie
+   - Makefile changes
+
+2012/11/05 Rob Currie
+   - **Temp** fix to FC Analysis codebase
+   - Updated Grid scripts in new_scripts to be able to use PFN or LFN form of libRapidRun
+   - Added a 2nd output from BurnToROOT which adds a timeStamp to the output .root file
+
+2012/11/05 Rob Currie
+   - Cleaned up some Code in RapidPlot to only analyse correlation matricies when asked
+   - Cleaned up code to do with compiling RapidFit as a ROOT library
+   - Added ugly hack into OverriteXML to remove leading 'Q' characters from 'command line arguments' due to some as yet unidentified or fixed bug
+   - Removed all references to using 'link-time-optimisation' in build process. Should build faster binaries but resultant objects are too large due to a bug somewhere,
+       it's more effort than it's worth to try to use
+
+2012/11/04 Greig Cowan
+   - Added ability to calculate fit fractions from a PDF. This should really
+   only be used by the DalitzPlot PDF.
+    
+2012/10/31 Rob Currie
+   - Adding TimeAcc to LongLived_3DAngular PDF, disabled by PDF but can be used by the user if requested
+       This may require further testing
+   - Fixed minor segfault problem in JpsiPhi constructor
+   - Cleaned up code in XMLTag to make use of new Append/PrePend Path functions which make the OverrideXML feature more stable
+   - Moved more SetName/SetLabel calls out of ClassLookUp and XMLConfigurationReader
+   - Added <Label> XML Tag for PDFs (not fully tested but appears to be working :D
+   - Updated MakeFile to build smaller library form of RapidFit
+
+2012/10/29 Rob Currie
+   - Fixed bugs to do with working out what to actually do in main based on runtime config and other stuff
+   - Fixed bug in VectoredFC which would have produce an extreme amount of noise to stdout
+   - Fixed bug to do with saving of different Discrete Combinations in ComponentPlotter
+   - Fixed bug in 1DFC
+
+2012/10/25 Rob Currie
+   - Added SingleGauss PDF Use this one for Fitting, please don't alter SimpleGauss it's intended as an educational PDF
+   - Added LandauGauss PDF which is VERY CPU intensive but gives a Gaussian+Landau convolution
+   - Drastically altered the way the world sees the XMLTag class
+       I have moved the GetValue() method to be private to XMLTag objects
+       I have added GetIntegerValue, GetBooleanValue, GetStringValue, GetDoubleValue methods which return simple types which makes getting the contents of a XMLTag much easier and case-insensitive for 'True'/'true'/'TRuE'
+   - Moved XMLConfigReader to use the new XMLTag methods which makes the code more consistent
+   - Added LegendFontSize to Projection Config XML
+   - Changes Projections to use Splines rather than lines and to print all graphs at 'high' quality
+   - Added a Sorting Operation such that the '0' Component is ALWAYS the first component evaluated from a PDF regardless of where the user may define it to exist.
+       This makes using Color/Line and other Key's much easier to write
+   - Added sec time to timestamp for output files and such
+
+2012/10/23 Rob Currie
+   - Added a preliminary tool for plotting the correlation Matricies from out of a fit.
+       Simply Write the fit output to a .root file using the '--BurnToROOT' runtime flag then run it through the RapidPlot tool. (you will get a 1 event set of pull plots I've not disabled this condition yet...)
+       I plan to expand this to allow us to say something qualitative about expected correlations between parameters
+       This entails making changes to the output mechanism in RapidFit to write out information that was already available as well as adding the CorrMatrix class to the utils directory to handle the processing/plotting methods
+
+2012/10/22 Rob Currie
+   - Added initial attempt to Overlay multiple LL scans
+   - Updated the Overlay LL Code to call static function in RapidLL which is cleaner
+   - Started removing redundant code from ComponentPlotter.
+       This code which used to exist within Plotter but has been either moved or made redundant due improvements in the codebase.
+       This allows the codebase to be made much cleaner and easier to understand
+   - Fixed Memleak in BasePDF to do with caching of objects with just 1 discrete observable with 1 value in the PhaseSpace Boundary.
+       This wouldn't have effected final results, just would have made RapidFit grind to an eventual halt when no memory was left
+   - Removed more unused code from within ComponentPlotter, makes things a little easier to follow
+   - Cleaned up some minor code in RapidPlot.C
+
+2012/10/20 Rob Currie
+   - Added check to XML Initialization to catch obviously badly formatted XMLs
+   - Created new Common StringProcessing::FindFileName to look for a file depending on where it is likely to be
+       This has allowed me to replace code in several classes which may or may not have worked as expected on the Grid
+   - Re-Written some code around handling TH3D in Angular Acceptance which makes code more consistent.
+       This simply means that we now copy create/destroy objects in a cleaner way without relying on ROOT to do whatever it claims it does.
+       This fixes strange/weird pdf effects from code in the pdfs which was correct
+   - Added Call info to NLL output which makes tracking the progress of long fits very easy :D
+       Also added timestamp to the output from Migrad
+   - Added redimentary support for Minos output. We still cannot write the output to disk from Toy Studies and such, this is expected to come in the near future
+
+2012/10/15 Rob Currie
+   - Committing some changes to Makefile and some additional utils progs which aren't compiled by default but serve as nice examples on using code in the utils folder
+   - Adding 2nd Talk on RapidFit to tutorials
+
+2012/10/14 Rob Currie
+   - Commit is FAR TOO LARGE for comfort.
+       I apologise but this is the culmination of changing the API to use RapidFitIntegrator within BasePDF and a LOT of debugging to make tutorials work 'out of the box'
+   - Adding SimpleGauss PDF and derrivatives
+   - Added tutorial XMLs SimpleGauss, SimpleGauss2D, SimpleGauss3D, SimpleDoubleGauss, OptimisedDoubleGauss in tutorials folder
+   - Moved RapidFitIntegrator to be a member object of the BasePDF
+       Updated Caching code to allow for NumericallyIntegrateDataPoint to be called in PDF
+       Added Member function to BasePDF SetUseGSLIntegrator which is overloaded by the BasePDF
+          This is correctly overloaded by the NormaliseSumPDF, ProdPDF, SumPDF 
+   - General Updates to RapidFitIntegrator
+       Updated Code in RapidFitIntegrator to catch NumericalIntegration exception
+       Removed code which delt with output verbosity, was too much of a pain to maintain and was causing more problems than it solved.
+       Added Correction Factor to the GSL Normalisation. NLL and projections are now correct.
+   - ComponentPlotter takes the RapidFitIntegrator in the BasePDF and copies it. Therefore it should work with projections correctly
+   - FitFunction has had the code to initialising the RapidFitIntegrator objects removed and now all it has to do is copy the PDFs after changing the GSL
+       FitFunction modifies internal passed PDF object instances.
+       FitAssembler now modifies PDF instances passed to class to be the same as the PDFs at the end of minimisation
+   - Fixed bug to do with opening local vs locally stored files in SlicedAcceptance (Only noticed using relative file paths and running on ECDF/Grid/Batch...)
+   - Fixed RapidFitIntegrator to Correctly cope with fixed or 0-sized PaseSpace's
+   - Added initial try an an Implementation for multi-threaded PseudoRandom GSL Numerical Integration, but so far no luck...
+   - Fixed small memory leak in JpsiPhi PDF (prob wouldn't notice given memory requirements for the per-event caching anyway)
+   - Fixed ComponentPlotter to cope with 1D PDF Numerical and Analytical Projections
+   - Added v5_old PDF which can be used as reference
+   - Added Per-Event Time Resolution to LLBkg_3D This PDF REQUIRED TIME ACCEPTANCE TO BE ADDED!
+   - Mistag PDF modified to cope with untagged events and other conditions
+
+2012/10/10 Rob Currie
+   - Committed small bugfix to sWeighting (has 0 effect but it's more 'correct' now)
+   - Committed some small fixes to savetoXML
+
+2012/10/09 Greig Cowan
+   - Changed default mass and width of the LASS component.
+
+2012/10/08 Greig Cowan
+   - Added copy constructors to DPComponent derived classes. Fit with Z wasn't
+     working without them.
+   - Fixed component plotting of DPTotalAmplitude PDF when including the Z.
+   - Moved some of the old DP code to deprecated.
+
+2012/10/05 Rob Currie
+   - Improved an error message from RapidFit in FitAssembler
+   - Changed the interface to allow for a public RapidFitIntegrator object to be requested
+         ***THIS IS NOT WORKING AND RAPIDFITINTEGRATOR OBJECTS ARE NOT USED! I JUST WANT TO FIX THE API FOR REFERENCE BEFORE I CHANGE CODE WE ACTUALLY USE***
+   - Added a minor bug-fix to prevent less than optimal behaviour in toys. This is a minor bugfix and changes fit stability without effecting wether the fit result is good or not
+   - Added 'SimpleGauss' PDF. This is intended to be kept as a minimal PDF which I will reference in the RapidFit Tutorials I am writing!
+
+2012/10/03 Rob Currie
+   - Fixed GSL code to compile&&link without 'make gsl'
+   - Added <UseAlpha> to sWeighting XML which allows for the sWeights to be normalised at Calculation and removes the need for: <NormaliseWeights> 
+
+2012/10/03 Greig Cowan
+   - Switched GSL integrator to use IntegratorFunction so that we can handle 
+     ComponentPlotting in a nice way.
+   - Fixed couple of bugs in DP PDF (K2 resonace had wrong L in constructor and
+     DPBarrierL1 factor had wrong Blatt-Weisskopf term.
+
+2011/10/03 Greig Cowan
+   - GSL integrator now working with projections (always was, just didn't realise it!).
+   - GSL integrator should now be able to handle arbitatry PDFs (needs some testing).
+   - Added additional polarisation for spin-2 K2(1430). Added K(800) parameters.
+
+2012/10/02 Greig Cowan
+   - Lots of changes:
+	- Added option to perform numerical integration using quasi-random numbers
+	from GSL. This is just MC integration, but faster. Can be configured using
+	switch in XML, but the code for the integration is specific to the DP 
+	analysis. I will try and make it more general for next iteration. Also have
+	a problem getting it to work with projections.
+	- Some rearrangement of the DP PDF.
+	- Added option for time offset in Exponential PDF - needs some testing.
+	- Changed FitAssembler slightly to set the NLL which is returned from 
+	evaluating the function. This is useful when you want to do some debugging
+	by making an LL scan of a parameter without actually fitting anything else
+	(i.e., just evaluate the LL at each scan point).
+
+2012/10/02 Rob Currie
+   - Committing sign fix for |lambda| fitting in v5
+
+2012/10/01 Rob Currie
+   - Changed C++ wrapper for gsl code.   Now uses:     '__RAPIDFIT_USE_GSL' to wrap GSL codeblocks
+   - Removed Reseve function in MemoryDataSet, no longer required and was causing malloc issues on some systems
+
+2012/09/23 Rob Currie
+   - Fixed bug in ComponentProjections exposed due to bug in ParameterSet
+        This has allowed me to remove the 'combination weight' term from the normalisation of the integrals between data/theory
+   - Improved the Trace in FitFunction to save the TTree to disk for each new entry
+   - Improved Errors from ScanStudies
+   - Fixed some minor gcc warnings from 'make debug'
+
+2012/09/21 Rob Currie
+   - Fixed the 1DLL bug in the 2DLL code
+
+2012/09/19 Rob Currie
+   - Fixed bug in PhaseSpaceBoundary
+   - Cleaned up some code to fix warnings from clang
+
+2012/09/18 Rob Currie
+   - Changed infomation to be output from DataSet in case of Weighted DataSet
+   - Attempted to fix bug in XMLConfigurationReader
+
+2012/09/18 Greig Cowan
+   - Changed parameterisation of DP PDF.
+
+2012/09/17 Rob Currie
+   - Fixed bug which caused all Toy Studies to fail to re-aquire cached TFoam objects
+   - Possibly fixed a bug to do with caching code not correctly picking up tag+1 vs -1 (people will likely have noticed if this made an effect)
+
+2012/09/16 Rob Currie
+   - Fixed a bug to do with addressing bad parameters in ScanStudies, this was picked up by valgrind --tool=memcheck
+
+2012/09/14 Rob Currie
+   - Fixed some malloc bugs valgrind --tool=memcheck now works without barfing at the screen about bad malloc/delete commands
+
+2012/09/12 Rob Currie
+   - Modified PDF Constructors to take slightly less space when printing out construction info
+   - Modified XMLConfigurationReader to be able to print PDFConfiguration data in a manner easier to parse from output
+   - Modified PDFConfiguration to only print when called with the Print() method, it's easier to manipulate and use
+   - Modified v5 to save more information per SetPhysicsParameters
+   - Modified BsMass to be slightly faster and cache more results
+   - Modified LongLivedAngular_3d to be slightly faster and cache more results
+   - Fixed some compiler warnings about classes not being fully initiailzed in constructors
+   - Added destructor to Time Acc code
+   - Added some (for now) commented out debugging class information
+   - Fixed bug in Threading code to deal with 'leftover' events sometimes being dropped in some rare situations (chaning number of threads fixed or this update)
+   - Added a lookup check which is performed once per data point in projections to catch wether an integration or evaluation of a datapoint should be done...
+        This requires some additional work to narrow down what the value of non-integable values should be when they're passed to the PDF
+        ATM this is the average(mean) value of the unknown observable from the dataset distribution. (Not perfect but damn close to ideal)
+        This appears i.e. when projecting the Exponential with timeRes on over a DataSet
+
+2012/08/2x Rob Currie
+   - Added lots more debug info for input just run a fit with/out --Debug to see what some of RapidFit is doing behind the scenes
+   - Added a method in FitAssembler to return artificial FitResult for a completely fixed ParameterSet
+   - Modified ComponentPloter to construct PDF dependent PhaseSpace
+        This required expanding the functionality within MemoryDataSet::GetDataNumber
+        When a DataPoint is passed with a Discrete Combination which is a super-set of the available PhaseSpace (i.e. missing one or more discrete boundary condition values)
+        the correct total for the dataset is totalled and returned.
+        This means it's no longer an extremely cheap operation in terms of CPU but is not called enough times to be a bottleneck
+   - Added new functions to StatisticsFunctions for constructing a vector of vectors, each vector containing the values for one discrete combination.
+        This should be easier to use than the existing functions which return a vector of DataPoints which can require some attention whilst being used.
+   - Added Print() to BasePDF this can easily expanded to make debugging much easier
+   - Expanded XML() for PDFs
+   - Added the ability to externally change the internal PhaseSpace within a NormalisedSumPDF
+   - Added the ability for a PhaseSpace to check itself against a given PDF. Will add a throw mechanism in this when one ever becomes needed
+   - Added a sinusoid PDF. It is a PDF that wiggles with cos/sin and is always +ve with a float-able amplitude. I will add per-time resolution when I can be bothered
+   - Added a template PDF. I got bored copying and gutting a PDF whenever I want a new one so saved the result of gutting a PDF an uploaded it for others to build on
+   - Modified Exponential PDF to use only per-event normalisation as well as using per-event caching of complex normalisation quantities.
+        This gives some speed improvement over the complex case with little slow down to the simple
+   - Fixed Memory leak in PhaseSpaceBoundary that displays during use of the caching code (this leads to speed improvements and a lot less memory during jpsiphi fits)
+
+2012/08/17 Greig Cowan
+   - Added Bs2JpsiPhi Hlt acceptance histograms for "unbiased" and "biased" lines.
+
+2012/08/14 Greig Cowan
+   - Added option to switch between 4D and factorised acceptance histograms in DPTotalAmplitude.
+   - Fixed bug in WrongPVAssocBkg PDF which I believe was causing the normalisation to be wrong. Added new histograms with reduced number of bins.
+
+2012/08/08 Rob Currie
+   - Added new process to 'Normalise' the use of Weights within a fit
+        This has to be explicitly turned on with the XMLTag <NormaliseWeights> set to True in the FitFunctionConfiguration XML segment
+        This required adding new features through IDataSet and into a few other classes such as PDFWithData.
+        The code largely adds to existing methods with minimal internal changes so nothing should be at high risk of breaking
+   - Added <RooFitErrors> Tag to replace <TestNewErrors> tag which is more correct and activates the error correction due to correlation matrix mathematics
+   - Added the option for various sections of code to try using $PWD as $RAPIDFITROOT as this is my normal convention and I change RAPIDFITROOT based on my current location quite a lot
+   - Added Get/Set EventWeight to DataPoints. By default this returns the EventWeight when it has been set. When it has not been set it returns 1.
+        This allows for an easy interface to get the event weight without having to worry about the name of the observable that the event weight is stored in.
+        This is necessary when using the NormaliseWeights tag as I wish to keep the weight observable in memory and not to start to modify the contents of observables throughout the framework (messy and potentially dangerous)
+   - Added PseudoObservables to the LL_3D PDF which should allow it to be slightly faster when using event resolution
+
+2012/08/08 Pete Clarke
+   - Added a configurator to switch off component plotting in _v5_  so that by default
+     one doesnt get them , ans plotting is a lot quicker
+
+2012/08/05 Rob Currie
+   - Fixed some minor gcc complaints about local objects having same name as globals
+   - Added gsl implementation of erf(z) for z=x+yi this appears to give the same result as the RooFit cod
+   - Updated some v5 error messages
+
+2012/08/03 Rob Currie
+   - Fixed a 1 line bug which has plagued me since introducing the Chi2 test
+        When this bug presented itself the results were obvious i.e. >10 sigma!
+
+2012/07/25 Rob Currie
+   - Removed #pragma temporarilly until a better solution is found
+   - Removed some dead code from JpsiPhi, fixed bug so that we can now perform per-event time integral caching with time acceptance turned on
+   - Renamed several parameters in several files to clear issues due to object scope
+
+2012/07/25 Greig Cowan
+   - Modified LogNormalDistribution to be the sum of two LN distributions with a fraction. Empirically, this appears
+     to be a very good model for the per-event error distributions of signal and background.
+
+2012/07/24 Rob Currie
+   - Fixed bug in sWeighting when you are weighting multiple ToFit segments within the same XML
+   - Added some gcc pragma into the code to stop explicitly valid exact double comparisons throwing warnings or errors at compile time
+   - Made some methods const as appropriate when reading through the codebase
+   - Fixed bug which caused JpsiPhi_v5 to segfault when generating angAcc weights
+   - Added 2D projections for AngularAcceptance histograms for diagnostics
+
+2012/07/24 Greig Cowan
+   - Added Novosibirsk PDF for dealing with per-event errors. I think analytical integration is OK...  
+
+2012/07/23 Rob Currie
+   - Added new macros to IPDF header, PDF_THREAD_LOCK and PDF_THREAD_UNLOCK
+       These are intended to be used to lock sections of code that must be run in single threaded mode. This particularly includes stdio streams
+       The macro produces code that has no effect on unthreaded calls but when multi-threading allows a simple way to lock a section of code using the main thread-lock inherited from NLLThreaded
+       Use:
+           PDF_THREAD_LOCK
+           cout << "Hi from Inside PDF" << endl;
+           PDF_THREAD_UNLOCK
+       Beware not to throw from inside a thread-lock, I have no idea what will happen, it may eat your machine, burn your results, or just hang with no responce
+   - Caught unhandled error in JpsiPhi_v5 constructor, exists cleanly on bad XML and doesn't segfault
+   - Added 'make gsl' option to Makefile and added code into main.cpp and Mathematics.{h,cpp} to switch between ROOT and GSL-based implementations of an error function for complex arguments
+       This is in the earlu stages of testing but uses more CPU as it doesn't cache results, but is thread-safe so it's unclear which implementation is actually faster/more effificent
+       When gsl is not requested it the code doesn't attempt to look for the GSL library to protect machines that don't have it installed in the standard place
+   - Cleaned up some compiler warnings out of DataPoint.cpp harmless recasting of size_t to int
+
+2012/07/20 Greig Cowan
+   - Added PDFs for dealing with per-event errors. LogNormal parameterisation and PDF for taking histogram.
+   - Modified PDFs to allow for use of Punzi terms.
+
+2012/07/20 Pete Clarke
+   - Added a  "MakeFalat" configuration boolean to WrongPVAssocBkg  - lets you forc it flat in time and mass
+
+2012/07/19 Rob Currie
+   - Added DrawPull option to Projections in XML
+   - Added 1D pull Histogram support. Errors in pull are hard-coded to 1.
+       This seems sensible as this is calculated after normalisation, but I'm not certain...
+   - Added support functions to ComponentPlotter and modified OutputConfiguration to perform this new plotting
+
+2012/07/19 Pete Clarke
+   - Modified WrongPVAssocBkg   to do normalisation correctly for a reduced phase space w.r.t. the histogram
+
+2012/07/18 Rob Currie
+   - Removed the old throw/false statements from the SetPhysicsParameters
+   - Now looping over all of the input to change the internal PhysicsParameters
+   - Checked that objects are initialized with the correct ParameterSets in FitAssembler
+   - Changed whether a ParameterSet is added or set in the phasespace to fix LLscans
+
+2012/07/17 Rob Currie
+   - Added support for multiple Fraction Names within the CommonPDF structure
+   - Added RemoveChild function to XMLTag
+   - Updated unittest/framework_tests/component_plotting.xml to use commonPDF structure to test new code
+
+2012/07/17 Rob Currie
+   - Fixed bug in NLL where you were fitting with weight**2 rather than weight in the fit.... ooops
+
+2012/07/17 Greig Cowan
+   - Added PDFs and histograms for wrongPV background.
+
+2012/07/16 Rob Currie
+   - Fixed PsuedoObservable code in DataPoint, the methods access unique lists to save mistakes in addressing the vector elements
+   - Re-enabled numerical integration checking in the fits by default
+
+2012/07/16 Rob Currie
+   - Added Constraint XML output from a set of fit results
+   - Temporarily disabled Numerical Integral tests at the start of RapidFit
+   - Added some minor documentation to --help runtime flag
+
+2012/07/15 Rob Currie
+   - Significantly cleaned up PseudoObservable code-base and simplified logic, the compiler warning of an exact double comparison IS SAFE!
+       An exact double comparison is performed to know if a calculation needs to be repeated,
+       This may be slightly sub-optimal based on the stability of some calculations, but is fast and safe with regards to scale problems between parameters
+   - Added Bkg acc and bin number to DataPoint for caching
+   - Checked and fixed code in Bs2JpsiPhi_Angular PDF
+   - Removed Robs v5 as v5 now has caching and gives exact numerical comparison with HEAD
+   - Added wrapper functions to Mathematics to allow for functions to be used with PseudoObservables
+   - Fixed debug for NegativeLogLikelihood class, removed erronious *1. which was cause of differences which came when using Threaded class which didn't perform this calculation
+   - Added some help to CommandLineParser
+   - Added caching to Background 3D histo lookup and properly implemented caching of lookup for sliced acceptance in case of an offset
+   - Added new configuration option for ComponentPlotter to cope with incorrect analytical normalisation factors
+       This allows you to effectively select whether you trust the numerical or analytical integration more from your fit and effects a scale-factor in converting from PDF to data
+       The XML is: <ScaleNumerical>True</ScaleNumerical>
+   - Improved latex output in ResultFormatter and EdStyle, most JpsiPhi parameters render in latex and works on lxplus, made some effort to improve correlation matrix output
+   - Added const to some functions in DataSetConfiguration
+   - Fixed segfaults generated by creating datapoints, parametersets and phasespaces with multiple members with the same name,
+       This cost me a Saturday by being convinced my XML was safe, which had a duplicated observable
+       These patches only effect object construction of a small number of objects but make life a LOT less painful by delivering a sensible warning
+   - This code has been checked with the full JpsiFit and with a benchmarking XML I have for testing the projection plotting technology and nothing has broken
+   - Added CommonPDFConfiguration, CommonPhaseSpace and CommonPDF XML tags which allow for the PhaseSpace, XML and PDF configuration to be removed from the ToFit segment of an XML
+      For JpsiPhi this reduced the total XML size by roughly 30% and makes running complex fits much simpler
+      These are to be used to wrap a common XML segment external to any ToFit XML and constitute new top-level XML segments below the RapifFit tags
+   - Implemented general bugfixes to reduce places where code could segfault to return a slightly more helpful error
+
+2012/07/15 Greig Cowan
+   - Added acceptance histograms for Bu lifetime measurements.
+   - Added PDF which combines two exponentials for background.
+
+2012/07/10 Rob Currie
+   - Adding Bkg Histograms for JpsiPhi 1fb Paper
+
+2012/07/10 Pete Clarke
+   - Mod LongLivedAngularBkg_3Dangular to deal with both transversity anf helicity histogram
+   - Moving LL background PDF to PDF-basis for Helicity
+   - Updated Background Histogram with correct Basis
+
+2012/07/10 Rob Currie
+   - Adding Background Angles Histogram for 1fb 2011 jpsiphi
+
+2012/07/06 Rob Currie
+   - Added correct return for commandline configuration which require exiting without any further action
+   - Updated Latex Param names in latex
+   - Updated Latex output files from standard fits
+   - Added a more graceful exit to AngularAcceptance object when histogram is not found
+   - Increased number of events to be reconstructed for angular acceptance histos to be 10x the input MC. This can be very memory intensive, will look to loop this in the future to reduce the memory requirements.
+   - Removed pi transform from main and v5 for Helicity-Phi. These transforms caused more problems than they solved.
+   - Updated 30MeV window Histogram UanB
+   - Added basic lookup caching for AngularAcceptance object which should take some time off fits
+
+2012/07/04 Rob Currie
+   - Today there was an announcement of a 5.0 sigma measurement of a SM Higgs like boson at the LHC
+   - Added EvaluateTimeOnly to IPDF with a BasePDF implementation that is -ve
+   - Modified Mathematics to check for the explicit definition of this Eval method in calculateAcceptanceWeights
+   - Modified code in main.cpp to calculate both transverse and helicity angular acceptances whenever calculateAcceptanceWeights is called
+   - Minor bugfixes in DebugClass and RapidFitIntegrator
+   - Updated Acceptance Histograms
+
+2012/07/03 Rob Currie
+   - Added the debug option to more classes and some examples of use in XMLConfigReader
+   - Fixed a minor bug in ComponentPlotter
+   - Replaced the standard calls to ResultFormatter to output a folder containing latex files.
+       This has several advantages:
+           The latex is pre-compiled for you and is mostly bug free
+           Individual tables are in separate latex files which allows for them to be included with input commands in latex which makes editing documents MUCH easier
+           There's less indecipherable garbage thrown at the screen after a fit.
+       The normal fit-review and Minuit output are still displayed only the latex has gone away and has been diverted directly to a file
+   - Added AppendParameterNames as an XML tag which is a member of PDFConfigurator it allows for multiple physics parameters to be renamed quickly to save xml
+   - Added StringProcessing.o as a requirement of objects linking against EdStyle in utils.
+       Avoid cross-changing the codebases this is here to allow for some EdStyle functions which must rely on complex string manipulation.
+       I don't intend to write code for the linker to pick up and correctly resolve or put more stuff in EdStyle that doesn't belong there.
+
+2012/07/03 Pete Clarke
+   - Updated Bs2JpsiPhi_Signal_v5 to include (i) Lambda  (ii) Csp   (iii) additional asymmetric tagging calibration parameters 
+   - Added new Angular acceptance historgrams for th 1fb paper analysis
+   - small change to MoistagDistribution
+   - Added a new mode to BsMass   so tht it can (with a flag) fit for 2 Gaussians directly.
+
+2012/06/28 Rob Currie
+   - Removed pdfs/dalitz/src/DPComponent.cc in favour of keeping the header file for just an interface to derived types
+   - Added some copy constructors and cleaned up some destructors and inheritance in the dalitz codebase, although I have largely no idea what the code 
+   - Added --Debug run time option, this increases verbosity to maximum if you have a problem in an analysis.
+   - Added --DebugClass and DebugClass class source objects.
+        This allows the user to request for the debugging in a chosen class to be enabled at runtime.
+        eg:  --DebugClass ComponentPlotter
+        This will enable all of the debugging code within ComponentPlotter and dumps extra info to the screen as it's doing what it does which may be helpful
+        This is done without enabling all of the standard verbosity of sub-classes before here which may have stupid errors.
+        This has been enabled for many but not all classes in framework
+   - Changed expected behaviour of ComponentPlotter. Instead of exiting with an error it will now just plot 0 and continue
+        This is a change in the InterfaceFunction class, but only effects the ComponentPlotter and people should be aware of the change in expected behaviour
+
+2012/06/26 Joel Bressieux
+   - Added a fraction to lass parametrization in pdfs/src/DPTotalAmplitudePDF.cpp
+
+2012/06/26 Rob Currie
+   - Fixed some general compiler warnings and recast a few objects to make clang happier when that compiler is used (which may become default on OSX soon)
+   - moved -flto to just be used on Linux
+   - Made objects within dalitz folder not have a virtual destructor, the code contains some shared objects which may not be correctly duplicated/destroyed
+
+2012/06/24 Rob Currie
+   - Added compiler option -flto to cxx variables, this allows gcc to perform inline optimisations for functions within derived classes
+
+2012/06/22 Rob Currie
+   - Added otpion to save all of the individual datasets from within a toy study... this appears to work on the surface but doesn't give the expected results.
+     This likely requires work to change the underlying code to write a TTree os double branches rather than keep the TNtuple format
+
+2012/06/21 Rob Currie
+   - Added tool for processing weighted studies to calculate deltaGamma
+   - Added option to fix the total number of toys in Toy Studies to allow more complex studies
+
+2012/06/19 Rob Currie
+   - Fixed bug in Projections. Code now correctly skips projections over Observables it cannot constrain or it knows nothing about, instead of segfaulting
+   - Fixed way that stderr is redirected in ComponentPlotter. This requires use of posix functions which may not be on non-posix platforms.
+   - Fixed behaviour in main to use if/else structure rather than simply testing single booleans this means we can more clearly document what order arguments are processed in
+   - Added Copy Constructor to DataSetConfiguration to make the scope of objects within PDFWithData easier to follow
+   - Fixed bug in generation of Foam datasets by de-syncing the Random number generators from fixed seeds by extra calls to the Random Number Generator
+        The effect of this is to fix studies performed with fixed seeds and explicit generation PDFs
+        The results effect a study with a fixed seed but effect is < 1 sigma which is consistent with the no effect hypothesis
+   - Updated RapidPlot for Toy Studies
+        We now get more plots in multiple formats from the tool
+        It first tries applying a cut of all pulls on all parameters < 5
+           if <10% of data is left then this is not applied and a warning is given
+           if <50% of data is left a warning is given
+
+2012/06/19 Greig Cowan
+   - Added decay time acceptance histograms for unbiased and exclusively biased Bs2JpsiPhi samples.
+
+2012/06/18 Greig Cowan
+   - Fixed DP copy constructor which was causing problems when plotting PDF with acceptance included.
+   - Fixed DP histo background copy constructor as above.
+   - Lowered the maxPts in the RapidFitIntegrator.
+
+2012/06/18 Greig Cowan for Joel Bressieux
+   - Added phase space factor to DP PDF. 
+
+2012/06/14 Greig Cowan
+   - Enabled AngularAcceptanceHistogram for DP PDF as a configuration parameter
+
+2012/06/11 Greig Cowan/Joel Bressieux
+   - Updated LASS PDF to allow for floating parameters.
+   - Bug fix in DPHistoBackground PDF.
+   - Changes to Exponential due to bugs.
+
+2012/06/05 Rob Currie
+   - Replaced main.cpp now much more modular
+   - Added new classes ParseCommandLine and RapidFitConfiguration in order to do this
+   - Fixed LL scans these were broken when fixed parameters were not correctly added back into the FitResult
+   - Added LaTeX output to RapidPlot when processing Toy Studies. This can be expanded but should save some time in the future
+
+2012/06/04 Rob Currie
+   - Change the way that toy studies are performed to ignore all results that have a pull of > 5 sigma when calculating the average value/error/pull.
+     This cut checks ALL floated parameters within the fit to remove badly behaved results
+     If you wish to turn off this cut for diagnostics/known biases then pass the option --allData as a command line option
+
+2012/06/01 Pete Clarke
+   - Updated MistagDistribution (i) to use TMath and (ii) to add the small shoulder term (new parameter)
+
+2012/05/31 Rob Currie
+   - Thread-Safed GammaDistribution PDF
+
+2012/05/29 Greig Cowan
+   - Added class which implements JackKnifing of a dataset. It is not general at the moment but tailored 
+     for particular use case of fitting for a lifetime.
+
+2012/05/25 Greig Cowan
+   - Explicitly turned off caching in the DPTotalAmplitudePDF. Would be good to know why this doesn't work.
+
+2012/05/23 Rob Currie 
+   - Small changes in plot style.
+   - Centred the Plots on the canvas to not cut off scale factors on the x axis
+
+2012/05/22 Greig Cowan
+   - Fixed bug in ordering of matrices in CorrectedCovariance. Errors returned from weighted fits now look OK.
+
+2012/05/21 Rob Currie
+   - Constrained pull plots from Toy studies to be constrained to abs(pull)<10 to protect from numerical instability of small or zero error values
+
+2012/05/20 Rob Currie
+   - Removed some vebose output
+   - Changed toy studies and FC studies to not test the numerical integrator.
+     The information has been piped to NULL for a long time and nobody has requested it, so now the test is simply not performed to save CPU
+   - Removed dependencies on RooMath and alike from BsMass as the stl implementations in Mathematics are favoured
+
+2012/05/19 Rob Currie
+   - A debug_mutex is now exposed to all pdfs which can allow for sensible output of warnings/errors when running multiple threads
+     This potentially has issues on unchecked platforms.
+   - -ve Weights keep sign when performing corrections to the errors of weighted fits
+
+2012/05/17 Rob Currie
+   - Updated Code to do with Error Corrections
+
+2012/05/17 Rob Currie
+   - Have Updated ObservableRef class to have a more dynamic cache
+   - The ObservableRef object now stores a size_t object which is unique for the class using it to store the result of lookup operations
+     For ParameterSet this unique size_t object is initialized to be extracted from the 'this' pointer at construction and is modified when the internal contents of the class change such as to cause the cache to be re-calculated
+   - This means that we now perform 2 integer comparisons instead of a string lookup operation in the best case, but we now correctly reference objects in the worst case too which is important
+   - Changed the MinuitWrapper class to only pass free or floated parameters (anything not 'Fixed') to Minuit. This appears to have removed warnings from within Hesse about a bad error matrix
+     This code still has to be called by using: <ConfigureMinimiser>TestNewErrors</ConfigureMinimiser> but should be much closer to the final version of the code to correct the errors/correlation matrix in weighted fits
+   - Added many more const definitions to the codebase which forces the scope/behaviour of several objects to be much clearer in the framework
+
+2012/05/15 Rob Currie
+   - Fixed some 'not-fully-understood but kinda' bug in the way that ParameterSets are changed and associated with PDFs in RapidFit
+   - Removed some of the functions from IPDF and BasePDF which are not useful in further attempt to make it easier to see what goes on in the BasePDF
+   - PDFs now explicitly have the ParameterSet allocated within the PhysicsBottle and are managed internally within the PhysicsBottle
+   - new code to better handle ObservableRef objects being in/out of sync with the structure of the ParameterSet is being developed but has not been committed yet
+
+2012/05/11 Rob Currie
+   - Fixed a bug in RapidFitIntegrator which caused Component-Projections to fail.
+   - Added a few more const statements to functions throughout the codebase to make a few things easier to understand
+
+2012/05/11 Rob Currie
+   - Ended up creating RapidFitMatrix class to wrap both TMatrixDSym and Parameter names which are required for understanding the output of a covariant matrix
+   - Moved ComponentPlotter config class to separate header to make code clearer to understand.
+   - Changed API to use RapidFitMatrix to pass matrix objects around
+   - Cleaned a lot of compiler warnings issued by make clean
+   - Fixed severe memory leak in new caching code
+   - FitFunction now deleted after fit has been run in FitAssembler
+   - Progress has been made on new Error Corrections for Weighted fits, however this is still experimental and NOT enabled by default
+
+2012/05/10 Rob Currie
+   - Added initial changes required to correctly handle covariance Matrix in weighted fits
+   - Handling of covariant Matrix is now done using TMatrixDSym pointers which an object which can be written to a ROOT file
+   - New error changing code only working for Minuit with Minuit2 and Fumili implementations available on request only!
+   - New error code activated by using the XML tag: <ConfigureMinimiser>TestNewErrors</ConfigureMinimiser> within the Minimiser tags
+
+2012/05/08 Rob Currie
+   - Added work around to badly constructed PhysicsParameters in ParameterSet which should protect code higher up from badly constructed objects.
+   - Modified the FitAssembler to include a new method for constructing a ParameterSet which contains all of the PhysicsBottle Parameters
+     This set is constructed such that only the Parameters requested by Minuit are at the top of the Set in the same order as the one passed to Minuit.
+     This allows for the full XML ParameterSet to be passed to the PDFs used in Generating whilst keeping badly constructed XML from breaking Minuit.
+   - Corrected RapidFitIntegrator to correctly call Evaluate and not Integrate for 1 observable fit/projection even when weights are in the fit
+
+2012/05/07 Rob Currie
+   - Fixed a bug to do with discrete combinations (tagging) in Component Projections.
+     This was an erroneous (effective) factor 2 which has been missing for a long time in the normalisation of the data.
+     However there was another factor 2 which was introduced in the Component Plotting branch which hasn't been fully explained but is believed to be related to confusions around Discrete Combination.
+   - Added new FoamFile DataSource which does the 'simple' task of generating a Foam DataSet and then passes it through the ROOT file interface in order to correctly evaluate TF1 objects The resulting dataset is also saved.
+   - Added components to Bs2JpsiPhiMassSignal
+   - Commented out redundant code in BsMass
+   - Modified the interface to IDataSet to request the total amount of events in a single Discrete Combination within a given DataSet as given by a template DataPoint
+
+2012/05/07 Rob Currie
+   - Improved the BsMass PDF to correctly call the limits from the PhaseSpace that the DataPoint inhabits
+   - Added components to the BsMass PDF
+   - Added new unittest/framework_tests The idea being that the XML in here should always run without error as long as the feature they are testing is stable
+   - Cleaned up some naming of objects in the ComponentPlotter .root output. I still recommend this should only be used for diagnostics or if you know what you're doing, but it is useful
+
+2012/05/05 Rob Currie
+   - Fixed a bug to do with handling Nested NormalisedSum PDFs in a Component Projection
+   - Fixed a bug which stopped RapidFit from handling projections over a single observable (i.e. a mass plot)
+   - Added a new feature to the ComponentPlotter to handle line widths as an XML configurable quantity. If a line is defined as width 0 it is not drawn by design of our tool. Useful for when one line swamps out components
+
+2012/05/04 Rob Currie
+   - After more exhaustive testing the caching code now appears to be working and correctly caches what it possibly can so even if one PDF in a sum can't cache it's
+     normalisation the other will correctly cache it's value for multiple discrete combinations in the dataset. i.e. tag =1 always gets the tag1 cache and all the same for all other combinations
+
+2012/05/03 Rob Currie
+   - Turned Off caching by default while bugs are hunted down and squashed
+
+2012/05/03 Greig Cowan 
+   - Added LASS component plotting code.
+
+2012/05/02 Rob Currie                                    Migrated the Component Plotting Code into SVN HEAD
+
+2012/05/02 Rob Currie
+   - Fixed a VERY BAD typo in the code.
+   - Changed the way that all PDFs are evaluated such that any external call calls IPDF::Integrate to get the PDF analytical Integral (or -1 if none provided)
+
+2012/05/02 Greig Cowan
+   - Added LASS component to the Dalitz PDF.
+   - Expanded the Component Plot testing in main so that it is simpler to quickly produce a test plot without doing a fit first.
+     You can now specify the name of the observable that you want to plot, rather than having it hard-coded.
+
+2012/05/01 Rob Currie
+   - Removed old caching code
+   - Added new Caching Code which caches a value once per Discrete Combination in each PhaseSpace per ToFit
+   - Moved a lot of applicable PDFs to use the correct Normalise function where applicable. Implemented both on some PDFs
+   - Added some more documentation to the utils objects
+
+2012/05/01 Rob Currie
+   - Fixed a small memory leak in Foam.
+   - Added some new helper functions to PhaseSpace and DataPoint
+   - Fixed the TF1 code in SVN but we still cannot evaluate 0-dim equations and I am now convinced you will Never want to
+
+2012/05/01 Greig Cowan
+   - Added ability to have an acceptance histogram in DPTotalAmplitude PDF.
+
+2012/04/29 Rob Currie
+   - Updated EdStyle to conform to latest lhcbStyle.
+        This may become an annoying game of cat and mouse because I would rather not include a 'processLine' command in the EdStyle class to launch the raw lhcb script
+   - Fixed a bug in toy studies where datasets are not removed from memory between fits (caused a 2Gb memory leak on the GRID...)
+   - Modified ComponentPlotter to pick up Component Projections but only plot the 0th component
+        Now both <Plotter>time</Plotter> <ComponentPlotter>time</ComponentPlotter> call the same code, however the former will only evaluate Component 0
+   - Moved the Plotter class into the unused folder and removed the hooks for it from framework to try and consolidate what code should/shouldn't be used
+   - Fixed some compiler warnings
+
+2012/04/26 Rob Currie
+   - Fixed bugs which caused Memory Leaks in PhysicsBottle, ParameterSet and FitAssembler.
+   - Added const notation to applicable Observable functions. The first time I ever did this I couldn't finish compiling main due to the errors, not everything works as expected.
+   - Fixed Foam to gracefully handle a missing on-disk cache and simply proceed to regenerate it. This is something that only bugs people like me who find ways to bring the whole program down.
+   - Fixed a bug in BasePDF for clearing the Foam objects it knows about.
+   - Removed the 'Finalise' methods from the FitFunction and PhysicsBottle. These were simply not called and are no longer needed.
+   - Added the #pragma one line to headers which potentially speeds up compilation according to some articles.
+   - Added some more doxygen documentation. Some of the dot graphs are now getting quite complex showing the interplay between the classes.
+   - Updated the code which produces Toy Studies to provide plots which show the whole distribution, also updated the Makefile.
+   - Moved the old Feldman Cousins code out of the main build as it's no longer callable and the more upto date code is much more reasonable, although still complex.
+
+
+2012/04/26 Greig Cowan
+   - Fixed bug in DPTotalAmplitude PDF in the parameter transformation.
+
+2012/04/24 Greig Cowan
+   - Fixed DalitzPlot PDF so that numerical integration works with it.
+   - Changed flat upper decay time acceptance in Exponential PDF to extend to 20ps.
+
+2012/04/23 Rob Currie
+   - Added PseudoObservable class which cleans up what is involved in Creating PseudoObservables in the future Significantly
+   - Added Bs2JpsiPhi_Signal_v5_Robs and Bs2JpsiPhi_Angular_Terms to show how PseudoObservables can be used by a PDF this technology may/may-not make it's way back into head
+        This allowed me to move the angular terms elsewhere (which makes life easier/clearer) and has reduced the amount of actual code in the header considerably
+        I advide that anyone interested look at this as I'm close to having a method for caching complex objects for when they don't change between Minuit calls. More about this soon
+   
+   - Added a LOT of doxygen style documentation, although this will likely be an ongoing effort over a few weeks to finish this as there's a lot to document
+        Some of this has highlighted obscure behaviour, but mainly it is good to see the amount of deprecated code we have around and have actual documentation about what on earth some routines do
+
+        I have focused my efforts so far in BasePDF, RapidFitIntegrator and ComponentPlotter as these are the classes which I have been working on recently,
+        I aim to bring the documentation of all important classes up to this level over the next month or 2
+
+
+   - PDF DEVELOPERS:
+   
+        I have Removed the 'valid' boolean variable from BasePDF
+        This IS NOT USED anywhere in RapidFit and was associated with a few functions further up the chain such as NormalisedSum/Prod/...
+        I am hunting down and removing dead member functions which are just not required (so far not too many)
+
+
+   - Added --MakeTemplate to runtime
+        This is a nice new feature that takes in the name of the PDF you want and writes most of the XML for you
+        You need to configure ranges and values and fix some parameters to run a working fit, but this is a massive improvement
+
+   - I have done a lot of work with the flags: --saveFitXML and --generateToyXML
+        
+        saveFitXML will save the results of the fit you just ran in the XML with all physics parameters fixed.
+           I have the hope that this can be used to then run projections from in the near future and can be passed around internally as 'this is what I got'
+           Also, as it spits out all of the XML required to generate the objects in the first place you have (almost) all the information required to reconstruct the fit given
+
+        generateToyXML will save the final status of the Fit in an XML file which allows you to construct toy studies (for whatever purpose) 
+
+
+2012/04/18 Rob Currie
+   - Added a lot of const declarations throughout framework to make some of the code easier to parse and to highlight some potential mistakes
+        This doesn't effect pdf code and pdfs shouldn't worry about declaring functions const
+
+   - Added new XML tag to Observable's <TF1>
+        This allows for a parameter to be created based on a simple transform. Eg if the Ntuple contains time*0.3 then you can create an observable for time with <TF1>time/0.3</TF1> to renormalise the variable
+        It currently doesn't handle 0-dimentional functions aka. constant values but this is a corner case with no easy solution
+        This allows for parameter substitution to be reserved for physics parameters and observables to have a fixed name, although you can safely combine the 2
+
+   - Added a new XML tag to FitFunctionConfiguration <SetIntegratorTest> which allows you to stop checking the Normalisation at the start of a fit
+        By default this is 'True' but any other value (preferably 'False') will deactivate this test
+        Scans and FeldmanCousins have set this to be false to save CPU time and in an effort to combat some unknown numerical issue on the grid
+        NormalisedSumPDF now also constructs RapidFitIntegrator objects so as to not check the integrals of the subPDFs
+
+   - RapidFitIntegrator now contains new member functions NumericallyIntegratePhaseSpace and NumericallyIntegrateDataPoint
+        The behaviour of these should be easy to understand, they both call DoNumericalIntegration behind the scenes but this function is now private!
+
+   - framework has been tested and is able to produce the results from Moriond2012 using JpsiPhi v4 (at least to the accuracy of the results quoted when comparing between the different groups)
+        This has been done for both cFit and sFit.
+
+   - Started work on a lot of needed documentation for the code in the form doxygen comments, as I'm doing it, I've decided to go with the QT style, but this can be changed with a 'simple' sed command
+
+   - Will branch this commit for HFAG as the code used to reproduce the 1fb result. I will place the new branch in branches/HFAG-1fb-2012-04-18
+        This branch _WILL_ include an ugly one line patch that should _NOT_ make it's way into HEAD, EVER!.
+        It return 1. from calls to numerically integrate as there remains an (as of yet) unresolved issue with the Numerical Integrator. The fix has not been fully tested (yet)
+
+2012/04/06 Pete Clarke
+   - Cleared out many old Bs2JPsiPhi PDFs (all <= _v3)
+   - Added new class AngularAcceptance which deals with BOTH acceptnce factors and the acceptance numerator
+     using file creted now by Greigs code.  This means the angular acceptance factors areno longer needed in the XML
+   - Added a new PDF for the future  :  Bs2JPsiPhi_Signal_v5    (note name shortened)
+     This means the old Bs2JpsiPhi_SignalAlt_MO_v4.h is now a FROZEN version matching the Moriond analysis
+     All new work is in v5 - includeing the AngularAcceptance implementation.
+
+2012/04/04 Greig Cowan
+   - Fixed normalisation of 4D background histogram.
+   - Fixed seg fault and binning in acceptance histogram code.
+
+2012/04/03 Greig Cowan
+   - Added PDF for Dalitz 4D background histogram.
+   - Added histogrm for the 4D background.
+
+2012/04/02 Greig Cowan
+   - Added ability to write out angular acceptance weights to a ROOT
+     file and also stored 3D histogram of the acceptance along with it.
+
+2011/2012 Rob Currie
+   - Altered JpsiPhi PDF to handle components correctly for projections
+
+   Main dev work for Component Projections has completed and these are the main changes before this branch is moved back to HEAD
+
+   In no particular order the major changes to be aware of are:
+
+   1)  Changed the architecture to pass ParameterSet objects as a single element as the way that it is now used assumes one insance exists at a time and it passed throughout the code with objects accessing what they need from it.
+
+   2)  More Objects are held in memory as pointers and cleaned up with class destructors, this has removed (or reduced) several memory leaks in trunk-stable, even though the leak was never tracked down/removed
+
+   3)  FeldmanCousins has been rewritten to work in n-Dimentions with a new class VectoredFeldmanCousins
+
+   4)  PDFWithData has more access to datasets in memory
+
+   5)  Toy/MC studies and Vectored FeldmanCousins have been altered to inherit from IStudy.h this helps keep a common coding convention for common objects and is just less of a headache for maintenance
+
+   6)  Scans have been moved out of FitAssembler to make life easier
+
+   7)  Robs Strategy has been added to flip strong phases/dG/phi_s in jpsi/phi
+
+   8)  ComponentPlotter has now been written to evaluate components of a pdf for projections new XML has been added for this
+            New ComponentRef class has been created which is capable of reducing the total number of string comparisons when requesting a single component to be evaluated
+
+   9)  Multiple new hooks have been added to the IPDF/BasePDF, NumericalGeneration and NumericalIntegral have seperate Evaluate statements which in the BasePDF point back to the normal Evaluate
+
+   10) RapidFitIntegrator has effectivley been re-written.
+            BasePDF performs it's own test on the Normalise statements when Integrate is first called, this establishes some information about the PDF.
+            New functions have been added for BasePDF to allow the RapidFitIntegrator to interface with this:
+                          {,Set}ForceNumerical contains the decision about wether the PDF is numerically normalised
+                          ForceCache allows the RapidFitIntegrator to change the internal cache of the normalisation when it's appropriate
+
+   11) IntegralFunction has been effectivley re-written as well it now catches throw statements from the PDF as it is allowed in the context of normalising the whole pdf phase-space for the pdf to evaluate 0 (and for components)
+
+       The RapidFitIntegrator/IntegralFunction combination is now fully thread-safe with numerical normalisation being valid for multiple threads
+
+   12) NegativeLogLikelihoodThreaded now works correctly and all of the required objects are set up in FitFunction correctly.
+
+   13) NegativeLogLikelihoodNumerical has been added which performs the same as NegativeLogLikelihoodThreaded however it saves burning too much CPU in simply re-derriving the same value multiple times
+
+   14) The output from Toy, LL, 2DLL and FC studies has been tested and are all in agreement
+
+   15) New analysis tool RapidPlot has been written which handles all of the output files automatically, contains much more modular code which has been through several rounds of testing and retesting
+
+   16) Various minor improvements have reduced a few more expensive operation calls and few minor memory leaks
+
+   + possibly a few more changes that I have forgotten about
+
+2012/03/14 Greig Cowan
+   - Added Dalitz PDF for Bd2JpsiKpi studies.
+   - Corresponding change to Makefile to pick up code for Dalitz.
+   - Added ExponentialWithDeltaGamma PDF for DeltaGamma_d measurement.
+
+2012/02/22 Greig Cowan
+   - Modified Exponential PDF to use per-event resolution and time acceptance.
+   - Added CrystalBall PDF for masses. Code taken from RooFit.
+
+2011/11/12/ Peter Clarke
+    - Significant change to the latest J/PsiPhi PDF  :  Bs2JpsiPhi_SignalAlt_MO_v4.cpp and .h
+    - Removed ÉBaseClass_v4.h and .cpp as all have now been moved back into the main PDF
+    - Helicity angle capability added, but you will need to ask Pete how to use this as we don't have it in the background PDFS yet.
+            <ConfigurationParameter>useHelicityBasis:True</ConfigurationParameter> 
+    - Made a technical transparent change in ProdPDF and NormailisedSumPDG to do with EvaluateForNumericIntagral()
+    
+2011/11/04 Rob Currie
+   -  Added Bs2DsPi_lowmassbkg PDFs for Gemma
+
+2011/11/03 Pete Clarke
+   - Added one angle fit PDFS
+
+2011/10/31 Greig Cowan
+    - Fixed header in ClassLookup.cpp for OS X.
+    - Added OS X section to Makefile.
+
+2011/10/31 Rob Currie
+    - Some bugfixes to get the Makefile to work with $PWD paths containing spaces and a preprocessor error in NegativeLogLikelihoodThreaded.h
+    - Fixed warnings against gcc 4.6 on lxplus
+
+2011/10/28 Rob Currie
+
+    - Fixed all warning when compiling against the latest clang on lxplus
+    - verified that the CV from a fit with the v3 and v4 PDFs have extremely negligible effect on fit values (last digit on phi_s and rounding of the errors in jpsiphi)
+
+2011/10/28 Rob Currie
+
+    -     How do I use/get multithreading when I'm working?
+
+          Change:      <FunctionName>NegativeLogLikelihood</FunctionName>
+              to:      <FunctionName>NegativeLogLikelihoodThreaded</FunctionName>
+
+          (optional):  add  <Threads>2</Threads>  within the FitFunction XML tags, replacing 2 with the number of threads you wish to spawn in the fit
+                                                  (default = number of cores reported inc non-physical cores)
+
+          or see:       unittest/Data2011-ProductionXML-LeptonPhoton/Production_Pass3_UandB_v3_newAF_multithreaded.xml
+
+
+          Unfortunatley ONLY functions which call the evaluatedataset method gain from this, but this includes 1D/2D/CV fits
+
+          angularacceptance functions can be multithreaded, but do we run them enough that this is of interest?
+
+    - This has turned into a MUCH larger commit than I originally hoped for...
+
+    Main new features:
+         1)   ClassLookUp has been improved to look for PDF objects
+         2)   RapidFit can now implement multithreaded fitting
+         3)   Scope of PDF objects in code now MUCH more clearly defined
+
+      More extensivley this equates to:
+    - Added PDF configuration parameter to each PDF allowing _ALL_ PDFs to make use of parameter substitution and accept options at runtime from XML
+    - Added Threading class containing static objects used for multithreading the fit
+    - Added NegativeLogLikeyhoodThreaded Class which multithreads the fit, I don't want to remove the NLL class 
+    - Added explicit Copy Constructor to Bs2JPsiPhi _v3 and _v4 classes and other PDFs
+    - Added numerous Copy Constructors to many classes within framework
+    - Modified MakeFile to build a position independent executable (-pie) which allows the binary to be read by the dload method at runtime as well as execute safely
+    - Changed ClassLookUp::NamedPDF to automatically search for constructor objects which exist within the namespace within the 'fitting' binary
+    - Added ClassLookUp::CopyPDF which allows you to copy a PDF from an IPDF* pointer (PDF now stores it's symbolic name in order to know what it is)
+    - Added NegativeLogLikelihoodThreaded FitFunction which is a threaded version of the old NLL code
+         (very simple tests shows that the overhead of this code is minimal <20% on really small datasets
+          and does actually provide speed improvements for much larger datasets and more complex PDFs)
+    - Added <Threads> tag to FitFunctionConfiguration part of XML to control the number of threads that should be used at runtime
+    - Changed a lot of constructors to call ClassLookUp::CopyPDF rather than keep the PDF by construction
+         This is more memory intensive, however it allows for a much clearer scope to the objects
+         Because of this I have moved PDF destructors to sensible locations within RapidFit
+         Most functions taking PDF(s) have functions to set/get the address of the internal PDF object
+         these should suffice for most cases where the object needs to be modified out of class
+    - Added unusual fix in DataSetConfguration for bug which crashes RapidFit when compiled and run as a root library before the number of events in a file is reported
+
+2011/10/19 Greig Cowan
+    - Updated code for calculating angular acceptance weights to also calculate
+      the covariance matrix of the 10 terms, from which we get the statistical
+      uncertainty.
+
+2011/10/17 Rob Currie
+    - Converging on a final set of Results for J/phi Phi paper and so are commiting a 'final' xml configuration for UBandB fit
+    - Updated some of the more modern scans to use the RAPIDFITROOT variable to pick up the RapidFit library (this will be built by default quite soon)        Added a script for performing Toy Studies over a batch system using the new method of submitting jobs
+
+2011/10/10 Pete Clarke
+    - Added many background angle histograms in pdfs/configdata/2011-JPsiPhi-backgroundangles-tight...XXX.....root
+
+
+2011/09/01 Rob Currie
+    - Updated Background PDF to read the bins from a histogram in the correct order
+
+2011/08/29 Pete Clarke
+    - Lepton Photon consolodation update
+    - fixed all the ...._dev  PDFS used for LP   to be called ....._v3
+    - added new ...._v4 which is the current development version
+    - Added a directory in unittest/Data2011-ProductionXML-LeptonPhoton/   
+      This contains al the production xmls used for the LP results and the subsequent adding of f0 and 2010 data
+
+2011/08/24 Greig Cowan
+    - Updated contour making plot to use our default style.
+    - Added ability to scale contours for the inclusion of systematic errors. 
+      It's all a bit hard-coded at the moment, but will do for now. 
+
+2011/08/19 Greig Cowan
+    - Added new acceptance histogram for signal with offset of 0.127.
+    - Modified ExternalConstraint to allow for a correlation between parameters (Pete)
+
+2011/08/18 Greig Cowan
+    - Modified Bs2JpsiPhi Prompt background PDF to be configurable.
+    - Fixed normalisation in LongLivedBkg PDF.
+
+2011/08/17 Greig Cowan
+    - Modified Ganga script for running 2D LL scans to include PBS backend.
+
+2011/08/16 Greig Cowan
+    - Modified LongLivedBkg PDF to use a delta function in place of the second exponential.
+
+2011/08/15 Greig Cowan
+    - GOF bugfix.
+    - Added new Bs2JpsiPhi PDF to include the angular acceptance in the evaluate method. This is
+      essential for toy generation/plotting and therefore for GOF calculation.
+    - Fix to ClassLookUp. 
+    - Added ability to have lifetime acceptance in LongLivedBkg PDF for Jpsif0 fit.
+
+2011/08/10 Greig Cowan
+    - Some minor GOF restructuring.
+
+2011/08/09 Greig Cowan
+    - Added some more helper code for GOF.
+
+2011/08/07 Greig Cowan
+    - Bug fixes to GOF.
+
+2011/08/05 Rob Currie
+    - Added some scripts and instructions to scripts/next-gen-scripts for running on the Grid with RapidFit
+
+2011/08/05 Greig Cowan
+    - Updated GOF method in main.
+    - Updated angular acceptance weight calculation for sWave.
+
+2011/08/03 Rob Currie
+    - Auto_Color lines in RapidLL, why ROOT has to make this so difficult I will never know
+
+2011/07/31 Pete Clarke
+    - Froze .....MO_dev  and ....MP_dev  ----->  M)_v2  and ....MP_v2
+    - Added new time resolution model as decided for lepton-photon into _dev versions of PDFs
+
+2011/07/30 Pete Clarke
+    -  change dupper time acceptance factor to -0.0158
+    -  added pdfs/configdata/  files
+
+2011/07/30 Pete Clarke
+    - Added new Bs mass model PDF called BsMass
+    - This implements the fraction and ratios of the second Gaussian to be fixed by MC
+    - This requires different parameters 
+
+2011/07/29 Pete Clarke
+    - Added the J/PsiPhi angular distribution histogram for of background for J/PsiPhi
+    - At smae time added the safe code to LongLived_Angular background PDf to look for file in $RAPIDFITROOT
+
+2011/07/26 Rob Currie
+    - Fixed PhysParam runtime flag... code was broken a long time ago with the introduction of the stepsize flags for each paramter
+    - Moved some code around in RapidPlot... code is _GOOD_ bug segfaults on exiting due to some ROOT(5.28.00b) bug with calling a TString destructor?...  code now writes out all data/plots safely before crashing
+    - Removed bad check on the FC_DATA_STEP code which trips on a less than perfect 2DLL 'seed'
+
+2011/07/22
+    - Pete Clarke
+     *****  STABLE RAPIDFIT DECLATED FOR LP CONFERENCE ****
+     *****  aim is to not change this apart from bug fixes until after LP ******
+
+     CODE WILL BE TAGGED AFTER L/P 2011 REGARDLESS OF THE STATE IT IS IN
+     MAJOR DEVELOPMENT IS NOW TAKING PLACE IN BRANCHES WHICH WILL BE RE-SYNCED/MERGED TO HEAD ONCE L/P IS OVER TO REDUCE HEADACHES
+
+2011/07/21 Rob Currie
+    - Added <Strategy> XML tag as a daughter of the FitFunction tag which allows us to control the style of fit i.e. use Pete's patch or not (not by default as per HEAD)
+    - Added --DontStartAtCenter command line option to decide wether to take CV for the starting value at each point 'default' or to take the XML input (when using the run time flag)
+    - Added --OutputLevel runtime flag which allows for the verbosity to be selected by the user at runtime, -1 will cause most all output to be killed
+    - Added <MultiMini> XML tag to control single or multiple instances of the minimiser object class
+
+2011/07/20 Greig Cowan
+    - Altered MemoryDataSet as it was deleting PhaseSpaceBoundary which was breaking GOF. This deletion should
+      move to the end of main.
+    - Correct method now being used for GOF.
+
+2011/07/18 Greig Cowan
+    - Updated GOF code. Using phi = -log() potential. Unfortunately, with this updated version of RapidFit I have a problem
+      running on OSX.
+
+2011/07/17 Rob Currie
+    - Fixed some minor bugs, further testing reveals results from svn head are binary compatable with svn r575-r620
+    - Improved the ability to use the acceptance data with the Biased fit
+          This requires that the filename passed to the ConfigurationParameter in the XML be either an absolute path or just a filename in the directory defined by the $RAPIDFITROOT
+          i.e. this requires $RAPIDFITROOT be defined in the environment to be used
+
+2011/07/16 Pete Clarke
+    - Added functionality ot SlicedAcceptnce and to ...BaseClass...  to read in a file to configure time acceptance
+       The file must reside in pdfs/configdata/.....
+       The XML needs 
+           <ConfigurationParameter>UseTimeAcceptance:True</ConfigurationParamete> to switch on time acceptance
+           <ConfigurationParameter>TimeAcceptanceFile:filename</ConfigurationParamete> to declare file
+           
+2011/07/14 Rob Currie
+    - Reverted Double precision to more relaxed limits due to bug this introduces...
+           Testing revleals we're now binary compatible with the results to 2010 as far back as r600
+
+2011/07/12 Rob Currie
+    - Fixed a dangerous mixup between the Step and Generated values in the 'FlatNtuple' format.    (Appologies this should not have happened and should have been caught)
+    - Added more control to the Minuit Minimiser:
+           <ConfigureMinimiser>Interactive</ConfigureMinimiser> Run in interactive mode
+           <ConfigureMinimiser>SeekFirst</ConfigureMinimiser>   Run Seek before Fit
+           <ConfigureMinimiser>NoHesse</ConfigureMinimiser>	Don't run Hesse after  the fit
+
+2011/07/10 Rob Currie
+    - Added some more XML options for the Minuit Minimiser, I trust they're fairly self-explanitory
+           <ConfigureMinimiser>SimplexFirst</ConfigureMinimiser>
+           <ConfigureMinimiser>HesseFirst</ConfigureMinimiser>
+           <ConfigureMinimiser>MinosErrors</ConfigureMinimiser>
+
+2011/07/08 Rob Currie
+    - Added the ability to control the StepSize of a parameter through the commandline/xml with <StepSize> or in the argument of --PhysParam
+        This ha touched a LOT of files. This adds the param_step columns to the output ttree from RapidFit.
+          (I am moving to allow the whole fit result to be 'reconstructed' from an input .root)
+    - I reorganized some code in MinuitWrapper so as to make scope and intent of the 'Function' object clearer, also fixed the output of Fumili and Minuit2 to be as expected
+    - Expanded Miniser Tag in XML (still backwards compatable)
+        <Minimiser>
+            <MinimiserName>Minuit</MinimiserName>
+            <MaxSteps>100000</MaxSteps>
+            <GradTolerance>0.001</GradTolerance>
+            <Quality>1</Quality>
+        </Minimiser>
+      It is now trivial to expand this to control the individual fitters more closely now
+
+2011/07/07 Rob Currie
+    - Modified every occurance of '#define DOUBLE_PRECISION' to use the smallest floating point number 'DBL_MIN' defined in <float.h>
+        This removes a single event of 2011 data that was INCORRECTLY being added into the datset as it existed outside of the strict phasespace limits
+
+2011/07/07 Rob Currie
+    - Modified Trace code to create a new tuple with a new name for each FitFunction object in RapidFit
+        This is really quite cool as it's the constructor/desctructor that creates the objects and writes the data and FitFunction strictly only exists for the lifetime of the Fit
+
+2011/06/27 Rob Currie
+    - Added the ability to Trace what the Minimiser is doing during the fit.
+         This data is pretty dificult to interperate correctly,
+              however it does provide some interesting insight to the behavour of Minuit
+         It is controlled by an optional XML tag which is constructed as such
+
+        <FitFunction>
+                <WeightName>Nsig_sw</WeightName>
+                <FunctionName>NegativeLogLikelihood</FunctionName>
+                <Trace>RapidFitFileName.root</Trace>
+        </FitFunction>
+
+	The output file 'RapidFitFileName.root' (as controlled by XML)
+        will contain an Ntuple with the value(s) of all of the parameters passed to the fitfunction object
+        (i.e. all parameters passed to and controlled by Minuit in the fit fixed&free)
+        It correctly uses blinded value during the calls
+
+        I am working on a tool to display the results from this (it's difficult)
+        I plan to write a short tool to plot multiple graphs on the one canvas with NLL vs param val & Request vs param
+        It would be nice to plot the evolution of the fit in multiple 2D parameter spaces but this is best done on request
+
+    - I corrected a small amount of code by renaming parameters to something more sane
+    - Some general fixes in the processing tools, no new 1DLL plotting tool... yet
+
+2011/06/23 Rob Currie
+    - Workaround for a Root bug
+        we now access the List of TBranch objects rather than casting them into TLeafs
+        and they both inherit from the Name class
+
+2011/06/20 Pete Clarke
+    - Fixed LongLived  ....  to correct loop over nxbins*nxbins*nxbins
+    - Upgraded more PDFs to tak econfigurator 
+    - Installed 2010 lower time acceptance in SlicedAcceptance
+    - Removed timeAcceptanceCategory from _dev_
+ 
+2011/06/20 Rob Currie
+    - Re-named the ToyStudyResult Class to FitResultVector class as this more accuratley reflects the nature of the class
+        (seeing segfaults in a ToyStudy class when your not performing a toy study can be VERY distracting)
+        It would be nice to re-write this class to return objects by reference rather than storing them internally as copies, this will be addressed soon but it's not urgent
+
+    - Added a further set of configuration steps intended to assist FC on the Grid.
+        One of the bottlenecks on doing FC on the grid is that you ended up having to run a fit to data and then using this data as a seed for what essentially is an MC based study
+        LHCb computing model is designed such that user jobs requiring external data run on Tier 1               This is the 2DLL scans
+                                                   user jobs requiring no external data run on Tier 2/elsewhere  This is MC production and such
+
+        I have added an interpretation layer to RapidFit to allow it to essentially take in the result from a 2DLL scan on the grid and run the FC 'toy' studies on Tier 2
+        This is possible as the job requires so little input it can be tarred up as part of the InputSandbox, this opens Tier 2 to running a root application
+        (This is probably more inline with the intent of the computing model s Tier1 is intended for data processing which FC is not strictly doing)
+
+        The way that this works is to construct ResultParameterSet and a full FitResult with a NULL Bottle/contour (etc.)
+        This contains all of the data that combined with the fit XML allows RapidFit to correctly initialize from the ground up the objects required for the FC scan.
+
+        - In doing this I noticed a potential shortcoming in the MinuitWrapper package which didn't construct ResultParameters with the limits as passed to Minuit
+        
+        - The main additition to the code has been in DataSetConfiguration.cpp which reads in a Result DataSet from a previous RapidFit run,
+           although, quite a few additional routines had to be coded up to support this use case
+
+        The code remains untested as this requires a new FC run to verify the result which is intensive so a code ceck before I run is required.
+	HOWEVER, I HAVE tested this code and the stadard Unit tests are OK so the code doesn't interfere with existing code (which was already known but is now proven)
+
+    - I also fixed several float/double ambiguities when compiling on lxplus due to the cmath template functions not being in focus (aka added the <cmake> header to some files)
+
+    - Fixed some compiler warinings in various utils which were annoying me which are basically to explicitly request parameter in the source where it is correct to do so
+
+    - Fixed the segfaults caused by paramater list mismatches between fit initialization and returning the output
+
+    - Added the initial implementation of pyRoot submittion scripts adequate for most reasons. These require a little work to verify and iron out remaining bugs on ECDF/CONDOR
+        HOWEVER, these scripts are 90%+ complete and represent a set of idiot proof scripts which allow the user to use ganga to submit to any added backend
+          This will allow 'any' user to submit intensive jobs and I intend to write a short talk introducing these soon
+
+    - Fixed a bug in the OverrideXML argument. I am happy to suggest people use it now as it's quite powerful and I believe it has actually stabalized.
+
+2011/06/19 Rob Currie
+    - Added some further improvements to the RapidPlot and RapidLL tools for plotting the output of various jobs
+         Expanded RapidPlot to optionally plot the variation in parameter error and pull across a 2D plane (not a bad feature for <10 lines of code)
+         Also added more clear usage instructions to the tools, but don't have the time to expand it as fully as for RapidFit itself but it's an improvement
+         Caught an usual bit of behaviour from ROOT in one of the algorithms in the Histo_Processing library
+         Improved the Plot_Both function to allow it to be easily expanded which should mean that in time the merge tool can be ported to it to simply process runtime arguments
+
+2011/06/17 Rob Currie
+    - Added a simplistic functionality to comment out XML,                                        ANY line starting with a # character is ignored in the XML processor.
+        It's not perfect and cannot be used to half way through a line, however it is better than not having it
+    - Ammended the Macro code in RapidFitIntegrator to compile correctly against ROOT 5.27
+
+2011/06/17 Rob Currie
+    - Some ammendments to the RapidPlot tool, made the Corrdinate plotting work in a better way, added a statisical review of FC data
+    - Fixed the palette object in temp plots
+      Again, this is very modular design which just works when built using the Makefile... still looking into wether I should compile static libraries or not when compiling with cmake
+
+2011/06/10 Rob Currie
+    - Redesigned the way we read in data to fall back to 1 column at a time (which allows for useful debugging). This is 'slower' but is still much faster than reading in via rows
+    - Re-enabled the projection plots, this was a complex issue to do with the scope of the PhysicsBottle within the object (this means several delete and new statments have been removed safely as it's destructor is now called from FitResult where it resides)
+    - Changed Release notes to hadle a pointer to an object and cleaned up by adding some more private copy constructors
+
+2011/06/10 Pete Clarke
+    - Completely revamped development PDF
+    - Bs2JPisPhi_SignalAlt_BaseClass_dev, Bs2JPisPhi_SignalAlt_MO_dev, Bs2JPisPhi_SignalAlt_MP_dev
+    - Added time acceptance by slices or numerical
+    - Changed mass signal pdf to be protected.
+    - Changed all PDF classes to inherit BasePDF instead of IPDF
+
+2011/06/06 Rob Currie
+   - Added ObservableRef class. This is a slightly more constructed way of caching lookup information when accessing objects such as PhysicsParameters, Observbles and Constraints
+       The construction of this object now means all classes have been transparently ported over to use this new object for communication
+       As a consequence all used pdfs/include/*.h files have been touched, and the Bs2JPsiPhi pdfs have been backported to transparently use this object asif it were a string.
+
+       This DOES NOT change the numberical output of the pdf but does clean up the codebase and speed up RapidFit member function calls.
+ 
+       This has been verified with the usual UnitTests
+   - Have ported all classes to use an ObjectRef object for time limit lookup, this is a more efficient use of resources
+   - Changed ConstraintFunction to use a cache for lookups to be more efficient
+
+     Again, this change is a structural change within RapidFit. It is designed to remove blind calls to the VectorContains function. This leads to a non negligable performance improvement in fits
+
+2011/06/03 Ailsa & Pete
+   - Added LongLivedBkg_3Dangular.cpp   PDF which takes in a histogram for angular distribution
+   - This also modifiedthe BasePDF.h to include the PDFConfigurator.h
+
+2011/06/03 Rob Currie
+   - Added "--Weffc++" to Makefile, as a consequence I've updated the constructors of several objects to explicitly
+       instantiate member variables onto the heap
+   - Added a check into main.cpp to check for fits where the global fit is not well behaved and by default stop
+       further actions which depend on this.
+       Use  '--ForceScan'  to force RapidFit to continue with a scan regardless of the fit to data. 
+   - Changed CMakeLists.txt to build everything as dynamic libraries
+
+2011/06/01 Rob Currie
+   - Made the Bs2JpsiPhi_SignalAlt_Baseclass destructor virtual again!
+   - Changed the conditions for toy studies to have repeats>1 for older xml's with the repeats flag defined
+   - Added the condition the global fit be well behaved for scans to be performed
+
+2011/06/01 Rob Currie
+   - Added TString_Processing, Histo_Processing & NTuple_Processing classes into utils directory
+       These contain a LOT of common code used throughout my RapidLL, RapidPlot, print and tinter tools
+       RapidLL has been cleaned up (This is for plotting/overlaying LLscans)
+       RapidPlot has been cleaned up a LOT (This is for 2DLL/FC plotting and has a much more modular design than previous tools)
+       tinter has been cleaned up and make compatible with earlier versions of ROOT (in time this will be further cleaned up and extended)
+   - Added 'print' binary which simply lets you know whats in a .root file (example of a few functions in the above mentioned classes) I find it easier than constantly launching TBrowser to just check a file
+   - Fixed Some minor compiler warnings fixed and ToyStudy behaviour fixed such that you get the expected results. This WILL effect the results of some people's personal plotting tools! (Apply a cut of Status==3 for ALL jobs)
+
+2011/05/31 Pete Clarke
+   - Update of BaseClass, MP_dev, MO_dev)
+   - Included <ConfigurableParameter> for PDFs in XML
+   - Included <ConfigurableParameter>UseCosAndSin</ConfigurableParameter> to fit for cosphis and sinphis
+   - Included <ConfigurableParameter>AllowNegativeAsSq</ConfigurableParameter> to allow AsSq negative
+
+2011/05/25 Rob Currie
+  - Fixed main.cpp to now call FC properly now, (quick profile reveals flat memory usage to first order over study as expected)
+  - Removed old plotting code from 1D and 2D LL scans, it has a bug that we are not willing to track down and can cause data loss so the easiest solution has been to remove it.
+
+2011/05/29 Rob Currie
+  - Updated Unittests to run correctly
+
+2011/05/29 Pete Clarke
+   - Update of all B2sJPsiPhi_SignalAlt......  code   (i.e. BaseClass, MP, MO)
+   - Refactoring code into base class
+   - Introduction of mistagP1, mistagP0 and mistagSetPoint instead of scal eand offset
+   - ..MP.. pdfs now require mistagP1, mistagP0 and mistagSetPoint
+
+2011/05/24 Rob Currie
+  - I've added a new class MCStudy which performs an MC style sequential study on a large ntuple(s)
+  - I've also added IStudy.h and plan to flesh this out into a simple framework which will allow for people to easily copy/implement a systematic study over some parameter within the RapidFit framework.
+       I will flesh out IStudy into a baseclass for a systematic fit and add functions which should allow sharing of a lot of code between Toy and MC style studies
+  - I've cleaned up main.cpp which now implements goto statements as opposed to having serveral lines of indentation in cumulative if statements
+
+2011/05/23 Rob Currie
+  - Slightly altered --saveOneDataSet to use less memory when handling large datasets
+  - Altered the RapidFitIntegrator to have variable behaviour depending on how it is intended to be used (i.e. less accuracy more speed for pulls) whilst having default ROOT behaviour for other uses (MC generation)
+  - Added virtual destructors for all Interface classes not having such (this gets rid of a memory leak poentital our end in RapidFit)
+      TFoam still appears to be largely memory resident throughout toys, however spikes in memory usage at generation have been tracked to the use of ROOTs multiple dimentional integration tool which we make use of
+      We don't destroy data associated with toys during toy studies (This is not an issue right now, but will likely hurt anyone doing studies at 2fb^-1)
+
+2011/05/23 Rob Currie
+  - Added the ability to sort a dataset accoring to a particlar Observable, this could allow caching of certain calculations, however this IS NOT enabled in the code, although it doesn't change the fit result
+      This can easily be adapted to allow for a PDF to request the data to be sorted in a certain way for faster processing under certain conditions
+      This was added partly because I was bored and partly because this could allow for you to speed up the MO pdf by sorting the events in time which reduces A the complexity of time acceptance and B speeds it up
+  - Adding the ability to select where in the input file you start the fit from
+      This is a new XMLTag which is a child of <DataSet> and is used as:  <StartingEntry>10000</StartingEntry>   to start reading data from the 10000th entry in an ntuple  
+
+2011/05/18 Rob Currie
+  - Fixed a bug in --OverrideXML flag
+
+2011/05/17 Rob Currie
+  - Fixed a bug in the --PhysParam flag which caused parameters defined without a limit i.e. max==min=0.0 to have their value set to 0 as well, it now generates a free value with the given value
+
+2011/05/11 Rob Currie
+  - Removed the check for <RapidFit> </RapidFit> being the begining/end of a file (This causes more pain than it fixes when moving files between people)
+  - Added <TwoDScan> to replace <2DScan> Flags in XML for standards compliance old XML will still work... for now... consider the error messages a warning!
+  - Added command line option for editing a PhysicsParameter at runtime which can be accessed with '--PhysParam name,value,min,max,type'
+
+2011/05/10 Rob Currie
+  - Properly added the ability to overide any tag within an XML from the command line for easier submittion of systematics after this was requested from multiple users...
+    This time I wrote it properly, I pass a vector of pairs containing parameter address and new value down to the XMLTag class which now implements non-static functions
+    The transform between user submitted changes and XML tags is handled entireley within the XMLTag class
+    (which now implements a child/parent path member variable)
+    hence no significant changes to the XMLConfigReader, other than passing runtime input down to the XMLTag class.
+  - Added speed improvement to Projection Plots (which appear to not be running by default atm?)
+    This is due to the integrator demanding 1E-6 on upper limit of errors for each plotted point, this is a rediculously high error given the resolution of the plots!
+    Also added more interactive user input just to let them know that the program hasn't stalled!
+
+        PROJECTION PLOTS ARE NOT BEING RUN AUTOMATICALLY AS OF SOME PRIOR RELEASE
+        the best way to perform projection plots is to run something similar to:
+               'fitting -f some.xml  --testPlot outputfile.root'
+
+  - A few bugfixes in my program for plotting the result of toy studies (This tool works with both toy study ntuple formats)
+
+2011/05/05 Rob Currie
+  - Extended the --saveOneDataSet flag for RapidFit such that it saves OneDataSet of what you want defined in your XML.
+    If you define multiple DataSets in your file you will now generate multiple ntuples out the end.
+    These are named as such:   for '--saveOneDataSet Badger.root' with 3 datasets in an xml you will get 'Badger_0.root Badger_1.root Badger_2.root'
+
+2011/05/02 Rob Currie
+  - Fixed and added a bit of polish to the RapidLL tool (it requires ROOT>5.26 due to root being crap)
+  - Using a data generator in the XML whilst performing a scan now gives the expected behaviour of performing the scan over the 1 dataset that was produced for the best fit
+
+2011/05/01 Rob Currie
+  - Added the knowledge of build revisions into RapidFit build using Makefile, not looked into doing this with the CMakeLists.txt file yet.
+
+2011/05/01 Rob Currie
+  - *Fixed* memory 'leak' problem with toys	(This appears to be a TFoam 'feature')
+  - Made a lot of RapidFit more compliant with the -Weffc++ gcc flag which picks up on bad OO in the code
+  - Made RapidFit actually call a LOT more destructors cleanly and when appropriate as this was not being called before as Pete noted
+  - moved redundant code to framework/src/unused
+  - altered #include statements in a lot of framework files to make a clean distinction where objects come from in code
+  - Fixed a LOT of warnings when building RapidFit with clang++ (NB: you can compile RapidFit with clang++ and link against a g++ binary of ROOT)
+  - Added an internal name identifier for each PDF object in ROOT
+  - Moved a lot of code into IPDF.cpp THIS IS UP FOR DEBATE AND WILL LIKELY BE MOVED INTO A DEFAULT_PDF OBJECT AT A LATER DATE
+  - Changed a lot of internal function calls to pass vector<ParameterSet*> rather than ParameterSet* in preparation of future work to be done to enhance the XML
+
+2011/05/01 Pete Clarke
+  - Added new feature to allow substituttion of a parameter name when declaring a PDF
+  - This allows, e.g,  mistag  -> mistag2
+  - Added this ONLy in Bs2JpsiPhi_SignalAlt_MO_dev    and _MP_dev as new development PDFs
+  - Changes also necessary in Bs2JpsiPhi_SignalAlt_BaseClass and ClassLookup, InputParsing and XMLConfigReader
+
+2011/05/01 Rob Currie
+  - Added a new plotting tool RapidLL for doingd 1D LL plots, in a HEAVY state of flux and currently crashes after producing the plots, this is being developed in tangent with work I'm currently persuing
+  - Added a new plotting tool RapidPlot, this is another incarnation of the rapidfit_fcscanresults_2 code which *should* be easier to understand
+      I plan to fix rapidfit_fcscanresults_2 at some point for FC plots as this should be a simple addittion of a further search for only unique data points when performing a cut
+  - Added a few minor modifications to main.cpp and EdStyle.cpp which are mainly cosmetic and deal with the output of data and wrapper interfaces respectivley
+  - Altered the svn repository such that it will now correctly ignore binary and psuedo-code files which are built by the user
+      this makes the 'svn stat'/'svn diff' output cleaner _and_ removes the possibility of someone accidently adding one of these files into the repo
+
+2011/04/29 Pete Clarke
+  - some tidying of .h and .cpp files for
+    	   o Bs2JpsiPhi_SignalAlt_BaseClass
+	   o Bs2JpsiPhi_SignalAlt_MO_v1.h
+	   o Bs2JpsiPhi_SignalAlt_MP_v1.h
+  - Fixed signs in S wave terms in BaseClass according to the note form Jeroen & co
+  - Added Bs2JpsiPhi_SignalAlt_MO_noSwave.h,  Bs2JpsiPhi_SignalAlt_MP_noSwave.h
+
+2011/04/28 Rob Currie
+  - Fixed a subtle bug that *should* never present itself in the 2DLL code to do with combining XML and command line contour definitions
+      command line now takes complete precedent and overwrites the values stored in OutputConfiguration
+  - Added some UnitTest scripts which allow for the results of any commit to be rigorously checked against known good code
+      ONLY changes to the UnitTest XML are to have the source files in the local working directory of the fit
+
+      TO PERFORM a Unit test:
+
+	cd Path/to/RapidFit
+	cd scripts
+
+	./run_UnitTests.py			#	Run on your local machine over-night
+	./run_UnitTests_ECDF.py			#	Use when running on ECDF
+	./run_UnitTests_GRID.py			#	Use when running on lxplus and submitting to the GRID
+	./run_UnitTests_CONDOR.py		#	Use when running on CONDOR in Edinburgh  ***UNTESTED***
+
+2011/04/21 Greig Cowan
+ - Some changes to GOF code.
+
+2011/04/19 Pete Clarke
+  - Updated .h and .cpp files for
+    	   o Bs2JpsiPhi_SignalAlt_BaseClass
+	   o Bs2JpsiPhi_SignalAlt_MO_v1.h
+	   o Bs2JpsiPhi_SignalAlt_MP_v1.h
+    with bug fixes and cleaning after substantial mods by PELC and RC
+  - Added a new constreint to ConstraintFunction.cpp  for GL  and GH
+
+
+2011/04/06 Greig Cowan
+  - Added GoodnessOfFit namespace. This implements two methods which are
+    summarised in this paper: arXiv:1006.3019v2 [hep-ex]
+
+    1. Point to point dissimalarity method (section 3.3)
+    2. Distance to nearest neighbour method (section 3.4)
+
+    The second method is not as powerful as the first, but provides a nice
+    way to present the agreement (or not) between a PDF and data in a 
+    multidimensional problem.
+ 
+    There is no guarantee that this code is free from bugs!
+
+  - Added PDF for exponential.
+
+2011/03/25 Rob Currie
+   - Updated FC plotting tool
+
+2011/03/24 Rob Currie
+   - Added warning to fcscanresults_2 for incorrect global minima
+   - Re-Added AbsCV plotting to fcplotter v2
+   - Made RapidFit compile with ROOT 5.26 as a library (i.e. removal of all short's in headers)
+   - Added Free version of XML in config dir
+
+2011/03/23 Rob Currie
+   - Re-Written Makefile to use better linking between files
+   - Changed Fitting Strategy to that used by Heidelberg
+
+2011/03/22 Rob Currie
+   - Added the ability to built a CINT  library version of RapidFit with the goal of torturing Tier2
+   - Added Pete's new implementation of mistag parameter handling
+
+2011/03/21 Rob Currie
+   - Added Simplex to Minimisation Stratagy
+   - Added small amount of code relating to building RapidFit for use in CINT
+
+2011/03/16 Rob Currie
+   - A new framework allows for the pdfs to chache information about the address of objects within MemoryDataSets.
+     Profiling revealed this to be an issue and the (very wasteful) sub-routine to find the address of objects was called in excess of 1E10 times during FC scans with only 2 datasets
+     This is not overly apparent when running on one machine with one fit but for something such as FC we need to be able to scale better
+          The result of optimisations so far stand between 30-40% speed improvements on single fits and due to the nature of the fit, teh effect of these improvements should scale strongly with total event number
+   - This requires some relativley cosmetic changes for a pdf to make use of this new framework, the old interfaces are still in place and work, however they aren't very efficient
+
+2011/03/15 Rob Currie
+   - 'Optimised' a LOT of Mathematics to remove un-needed repeat calculations and similarly with the BaseClass pdf, this should improve fitting as these functions were called O(100k) during my profile run of RapidFit
+   - Added Controlled output from scans to give some level of debugging ability
+   - Reverted to old FC plotting code, although new implementation is on it's way (...slowly) to provide more plots per fit output
+   - Trying to help the compiler be slightly more intelligent by moving common return functions to be inline
+   - Applied some quick fixes to try and reduce overheads in commonly used functions (things such as removing constructors from within for loops)
+     Overall fit improvements seem to range between 25-33% from some quick and dirty tests
+   - Corrected the PhaseSpace problem with sWeighted scans and FC
+
+2011/03/13 Rob Currie
+   - Significantly Reduced Output from Scans, work still required to have this controled from XML or runtime but this is a finishing touch
+   - Moved a substancial amount of code to pre-incremental changes rather than post-incrementing variables as this is quicker and a relativley minor alteration
+       Mostly this should have been caught by all decent compilers, however should it not be this can fix performance issues with some implementations of using per-event tags
+   - Removed plotting tool for llscan results from default make as more recent plots all have results produced that are compliant with the fc plotting tool
+   - Added the ability to plot 100% Contour using fcscan plotter
+   - Changed ResultFormatter to output something which requires substantially less editing to be place in 'official' latex documents, also added a non-latex table to make reviewing output easier
+
+2011/03/11 Rob Currie
+   - Added preliminary sWeights code into FCscan
+   - Added new compililation options after proving it doesn't effect fit results
+   - Fixed my modifications to Conor's FC plotting tool
+   - Reduced output for Scans, would be nice to improve this somewhat
+
+2011/03/10 Rob Currie
+   - Moved FCscan into FitAssembler and cleaned up some more code, employed file compression on all data given FCscans will produce the results from several hundred toys and hadd doesn't compress
+   - Offered slightly more control over FC code now it is a function call, produced framework for assembling different schemes for defining NuisenceParameters, implement ShakeBottle, and use that :D
+   - Changed Root I/O method employed in Conor's RapidFit FC scan plotting tool, it should be a lot faster for situations where ttree entries exceeds 50k rows
+
+2011/03/06 Conor
+   - I've written the feldman cousins ordering/plotting macro. This accepts a merged ntuple in the format as output by Rob
+   - It doesn't need fixed numbers of toys per grid, and makes no implicit assumptions about ordering of the ntuple other than that the first entry is the global minimum
+   - Currently this uses the CDF/Heidelberg ordering method which may or may not be wrong. It produces results for comparison with heidelberg but makes no claims that they (and by extension we) have it right.
+   - I've also added a ganga script that allows you to split feldman-cousins jobs down into pxqxr subjobs, where p is the number of x axis gridpoints, q the y-axis gridpoints and r the number of subjobs to split toy generation into. This is, as Pete says "Embarrassingly parallel". 
+
+2011/03/06 Rob Currie
+   - RapidFit now only returns 1 warning (duplicated) when compiled with -pedantic I cannot resolve this warning and so I make an offer of a beer to whoever can fix it properly
+     (beware it's not as easy as you will first think root expects a 2D array allocated as double var[i][j]    NOT    double** var = new double[i] ; for a<i var[a] = new double[i])
+
+2011/03/06 Rob Currie
+   - Fixed A Lot of remaining compile-time warnings in RapidFit, moved Root from a local header to a System Header in Makefile and CMakeLists.txt so we can build against root with -Wall -Wextra without the complaints
+   - Changed a few defaults in FCcode and removed a LOT of redudant 'commented-out' code
+   - Turned off LL2DScan output when running FCscans
+
+2011/03/04 Rob Currie
+   - Re-Written a LOT of the FC code and it is now very accessible from the command line
+   - Some minor bugfixes
+
+2011/03/02 Pete Clarke
+   - Added second long lived background PDF   Bs2JpsiPhiLongLivedBkg_II
+
+2011/03/02 Rob Currie
+   - Added control to Minuit Output level to program, although it appears to be on minimal already as default...
+   - Changed Bs2JpsiPhi_SignalAlt_MP_v1.cpp to throw not exit on nan
+   - Added the ability to force a toy study to request N many good toy fits, this could allow for the output to be filtered to remove all non-crashing fits
+   - Added 'verbose' output to FC scans
+
+2011/03/01 Rob Currie
+   - Added initial implementation of the framework that will construct FeldmanCousins Plots in a distributed way
+     This has hardcoded 1k subjobs with 1k events at each scan point. This is likely to Change
+   - The Output Format for FeldmanCousins scans in "FCOutput.root" has been established as:
+		GlobalFitResult
+		ScanPointFitResult
+		TOY1
+		TOY2
+		...
+		TOYN
+		GlobalFitResult
+		ScanPoint2FitResult
+		...
+   - Fixed duplication bug which may/maynot have been in head for 2DScan, too many changes in this update to track down exact cause
+   - Added command line interface for controlling 2DScan functionality, this will be used eventually on ECDF to remove the need for the generation/use of several hundred XML per plot
+     Work is ongoing to produce a bash script that will generate a ganga script to bunch and throw jobs to the grid, remember that ganga has a subjob limit of 1k events so bunching jobs has this to take into account
+   - Fixed *all* complier build warnings in framework. Most were harmless integer comparissons but some did alert me to potential conditions which could have theoretically thrown fatal crashes
+     I recomend EVERYONE update because of this, it makes crashes so much nicer to debug :D (NEVER thought I would say something nice about Root, but give it overly standards compliant code and it's crashes are fairly helpful)
+   - Added DoSafeFit as a method to FitAssembler which allowed me to move the toy studies over to this new safer way of fitting for use in a distributed manner by changing DoFit to DoSafeFit.
+     This will benifit all users performing toy studies on smaller datasets where there is a larger risk of the fit collapsing. 
+   - Cleaned up the code in ToyStudyResults, considering moving the property of the length of time of the fit to the FitResult class to clean-up this class into a true FitResultVector which would be easier to maintain & use
+
+2011/02/28 Conor
+   - Took it upon myself to do some turd-polishing. As a result of either a more strict compiler or a newer root version, 
+     I was seeing a lot of warnings at compile time that weren't there before but were not recently introduced bugs. 
+     These were mostly due to doubles being cast as ints in places where they really shouldn't be. I've fixed these now. 
+   - Added two new programs, designed to handle rapidfit flat ntuple results as produced when submitting to batch systems
+   - These are rapidfit_toyresults and rapidfit_llscans. The first handles the making of pullplots and latex tables, the second handles 2D likelihood scans 
+   - The code is beta, particularly for the llscans, but tests so far show it to work
+   - running make will compile these along with the main rapidfit executable. Alternatively run "make utils" to just compile these independently
+   - To find out how to use them, just run them without arguments
+
+2011/02/28 Rob Currie
+   - Fixed a problem with the logic in LLcontour for 1x1 scans... I still maintain this is a 'special' use case
+   - Fixed the script that generates the jobs on ECDF. The code works and generates what the user asks for, however I maintain this algorithm is not as simple as you first think,
+	eventually I will translate this into a python job template for ganga, however as it 'just works' to a sufficient degree I commit a working example
+
+2011/02/24 Rob Currie
+   - Fixed the Blinding in the new 2DScan code, Now able to reproduce plots Pete generates with the old scanning code in a fraction of the time on ECDF correctly, the new scanning code should 'Just Work'(tm) for everyone
+   - Added short howto-use and bash script for breaking up a 2DScan plot to generate quick plots using as many cores as possible on ECDF
+
+2011/02/24 Rob Currie
+   - Changed the way that FitAssembler deals with Throws, will now attempt a basic recovery of the coordinates of the point based on shifting the fixed value slightly either way of where a fit falls over
+   - Changed the code I put in ToyStudyResults to return All Fit Status which is more helpful
+   - Added the few lines to print the result of the last LLscan or LLcontour to a .root file, will make this more elegant very soon, but for now if you want all of this info, do one fit at a time
+
+2011/02/22 Rob Currie
+   - Changed FitAssembler to add parameters missing in ResultParameter, this also included adding a new function to ResultParameter, added a functions to ParameterSet too for convenience
+   - The LLcontour code now correctly writes data to a file and looks to be storing the information required for the plots, however this code is still to be tested completely
+
+2011/02/21 Rob Currie
+   - Heavily re-written scanning code within FitAssembler to now use ToyStudyResult
+   - 'Co-ordinates' of each fit are 'hard-coded' into each FitResult
+   - Added new features within ToyStudyResult
+   - Moved code to make backwards compatible LL scan/contour plots to ResultFormatter
+   - Added slight improvement to my code in DataSetConfiguration, slight speed improvement again
+   - Removed <Type> tag from XML in Output Scan and Scan2D as this concievably serves no purpouse
+   - Interface to scan code and to deal with results through main is now very simplified
+   - Changed fail on Caching integrals to a throw statement for long scans
+   - Can now write results of Contour scans to ntuples  -- IN DEVELOPMENT
+     This implementation only spits out values for floated parameters, this is a known issue but allows for plots to be made as code development/testing progresses
+
+2011/02/17  Pete Clarke
+   - Added Bs2JpsiPhi_SignalAlt_MO_v1.cpp/h
+   - This is the mistag observalble pdf
+   - also removed temporary blinding of y axixs scale in 2D plots
+
+2011/02/17 Rob Currie
+  - Rewritten the code to read in root files into RapidFit DataSetConfiguration.h
+       after giving it near a fortnight of torture under various datasets and fitting I'm uploading it as it offers speed and logic improvements
+
+  - Fixed another gcc 4.4 bug in a pdf, Xcode seems to be on gcc<=4.3 still...
+
+  - large additions to XMLConfigReader to read in new Output <Scan> and <2DScan> tags and children which replace the <LLscan> tags
+  - large changes to FitFormatter to make DoScan more generic
+  - Added ScanParam class to cope with scan metadata
+  - Added a LOT of code to OutputFormatter to return on request ScanParameters and 2D scan pairs. This also requires storing a ResultParameterSet in the class
+  - Altered the code in main to run LLscan and LLcontour as requested, further options to these functions have been made redundant due to XML control
+  - Added ability to call FitResult objects from a Scan ala commented code in main.cpp
+
+  - Left hooks in FitFormatter for quick+dirty plotting code in RapidFit for scans
+
+  - Added CmakeLists.txt and scripts/FindROOT.cmake which allows RapidFit to be built with cmake which makes building on the existing code much easier imo
+  - Added doc/CMAKE-HOWTO.txt for those interested in using this I recommend it as it gets rid of 99%+ of make clean issues
+
+  - Added tinter-static.C file in utils  which is a copy of a plotting tool I use to return pullPlot graphs as used for note2
+
+  - Added initial implementation for throw-catch over single fits within a scan ala Pete's suggestion
+
+
+2011/02/16 Conor Fitzpatrick
+  - Modified the flat ntuple output to also include the likelihood to which the toy minimises. 
+  - In the ntuple this is called "NLL". This will allow pete's 2D likelihood profile scans to be split into jobs and sent off to condor
+
+2011/02/13 Pete clarke
+  - big commit of a restructing of the xxxx_alt PDF series
+  - Initiated new name  Bs2JpsiPhi_SignalAlt.....
+  - Factorised common code into Bs2JpsiPhi_SignalAlt_BaseClass
+  - New code in Mathematics:: to deal with upper time acceptance
+  
+2011/02/07 Rob Currie
+  - Added the ability to set the Random Seed at runtime using --SetSeed 1234567
+
+2011/02/07 Rob Currie
+  - Fixed a bug when trying to call Plotter with a dataset containing 0 events
+
+2011/02/04 Rob Currie
+  - Belated Update for earlier changes made to allow the use of <Seed>12345</Seed> tags in XML file under <RapidFit>
+  - These changes include XMLConfigReader as appropriate and IPDF.h such that every instance of an IPDF object now has a TRandom3 object seeded after it's initialization
+  - AcceptReject/Foam now call the Randomly seeded number generator in IPDF as opposed to seeding their own such that the <Seed> tag is one per toy study (fitting session)
+    Multiple Toy Repeats will truely generate randomly unique toys i.e. toy1!=toy2 however toy2 is always the same due to the reproducability of TRandom3
+    When this tag is in an XML the output toy study Results are completely Reproducible
+    When it is not in an xml file IPDF will be seeded with TRandom3(0) (i.e. uses a seed which is time depenent) as before
+
+2011/02/02 Pete Clarke
+  - Commit of modifications to Mathematics and B2JpsiPhi_mistagParameter_alt.cppp to allow for upper PT accecptance
+
+2011/01/29 Pete Clarke
+  - Big commit of 
+      - New PDFs with Swave and background with triple gaussian
+      - removed some old J/PsiPhi PDFs
+      - LL countour code
+ - Also Conor added an S wave PDF just before this.
+
+2010/12/06 Pete Clarke and Rob Currie
+  - Pete added new code to make the Plotter work for doing projections of weighted events
+  - Rob added code in DataSetConfiguration to deal with Float_t or Double_t Ntuples
+
+2010/12/04 Pete Clarke
+  - Fix added following previous update. The LLscan stuff didnt work after I had moved blinding into PhysicsParameter
+    Needed fix to PhysicsParameter, FitAssembled::DoScan and MinuitWrapper. 
+ - Also added Blinder.h and Blinder.cpp which i forgot in last commit
+
+2010/12/02 Pete Clarke
+ - Added code to perform blinding.  Principally thins just changes the construction of each PhysicsParameter
+   to add a blindOffset.  Blinding is spefified in the xml with the <Parameter> tag
+
+2010/11/29 Pete Clarke
+ - Added code to perform LLscans.  This meant changes to main.cpp, FitAssempler.cpp, OutputConfiguration.cpp, ResultFormatter.cpp
+    and added class LLscan.
+ - Also started adding commnd line help with --help
+
+2010/11/25 M Needham
+ - Add scripts to roadmap selection or more (ApplySelection), plot the input (PlotRapidVar.C) and a wrapper
+
+2010/11/11 Pete Clarke
+ - Modified pdfs/src/Bs2JpsiPhiMassBkg.cpp to catch a patalogical divide by zero when the slope parameter alpha was zero
+ - Added mods to IPDF, BasePDF, NormalisedSumPDF, SumPDF, ProdPDF to incliude vector<double> EvaluateComponents(..)
+
+2010/11/11 Greig Cowan
+ - Modified Plotter and EdStyle to make plots look a bit better.
+
+2010/11/06 M Needham
+ - Bug fix in  AddRapidFitInfo.C
+
+2010/11/05 M Needham
+ - Bug fix in  AddRapidFitInfo.C 
+
+2010/11/05 M Needham
+ - Add a macro in scripts AddRapidFitInfo.C to append the rapid fit variable to the standard ntuple 
+
+2010/10/28 -  Pete Clarke
+ - Added fix in pdfs/src/Bs2JpsiPhiLongLivedBkg_withTimeRes.cpp where it was possible to divide by zero in 1/tauLL
+
+2010/10/28 -  Pete Clarke
+ - Added new prompt background pdf with 2 Gaussians :  called Bs2JpsiPhiPromptBkg_withTimeResDouble
+
+2010/06/02 - Greig Cowan 
+ - Bug fixes in PerEventAngularAcceptance.
+
+2010/05/31 - Pete Clarke
+ - Added Gamma_obs  (from DsPi) as Gaussian constraint
+
+2010/05/05 - Greig Cowan 
+ - Added PerEventAngularAcceptance class for performing the mu, K
+   particle efficiency calibration from Bu->JpsiK control channel.
+   Can be run on a user supplied ntuple (in a particular format!) by 
+   specifying the --calculatePerEventAcceptance flag. For experts only.
+   I still need to plug the resulting efficiency histograms that come
+   from this method into the full JpsiPhi fit for per-event acceptance.
+
+2010/04/19 - Greig Cowan 
+ - Fixed Bs2JpsiPhiLongLivedBkg_withTimeRes. Now using analytic integration.
+   Had to adjust the Normalisation method parameters.
+
+2010/04/04 - Greig Cowan 
+ - Fixed Bs2JpsiPhiLongLivedBkg_withTimeRes. Using numerical integration.
+
+2010/03/29 - Greig Cowan 
+ - Fix to the average angular acceptance calculation.
+ - Fix to DsPi proper time acceptance.
+ - Some changes to support python scripts.
+
+2010/03/09 - Greig Cowan 
+ - Added code from Pete for constraining Gamma_L.
+
+2010/03/08 - Greig Cowan 
+ - Added random number to TCanvas name to prevent annoying messages about
+   deleting canvas when plotting results of simultaneous fits.
+ - Added UpdateIntegralCache() to IPDF. This allows us to force the update
+   of the internal RapidFitIntegrators caches of NormalisaedSumPDF at 
+   each iteration of the minimisation. Previously these were not being 
+   updated which resulted in the wrong result when caching was used with
+   NormalisedSumPDF. For all other PDFs, UpdateIntegralCache() does
+   nothing.
+
+2010/03/07 - Greig Cowan 
+ - Fixed bug in the numerical integration caching that only affected
+   fits with multiple discrete values of an observable.
+ - Changed default compilation to use -O3.
+
+2010/02/25 - Gemma Fardell
+ - Changed DsPi PDF to add propertime acceptance parameters as physics parameters.
+ - Changed tag in getObservables() to (int) in both DsPi PDFs.
+
+2010/02/24 - Greig Cowan 
+ - Merged Ben's branch into the trunk. Includes normalisation caching
+   and ability to add in external constraint.
+ - Gemma added a new DsPi PDF including analytic propertime acceptance.
+
+2010/02/11 - Greig Cowan 
+ - Changed way that angular acceptance terms are calculated in Mathematics
+
+2010/02/09 - Greig Cowan 
+ - Added in explicit HESSE step after MIGRAD in MinuitWrapper. We should
+   also add in a switch at some point to allow for a HESSE step before
+   MIGRAD and a final MINOS step for the asymmetric errors.
+ - Changed the default final gradient tolerance to 0.1 and the maximum
+   number of steps to 1000.
+
+2010/02/04 - Greig Cowan 
+ - Added overall normalisation into angular functions in Mathematics.
+ - Open ROOT data file in READ mode, not UPDATE.
+ - Fixed normalisation caching for case where double gaussian resolution
+   is used in Bs2JpsiPhi PDF.
+
+2010/02/04 - Pete Clarke
+ - Modified Bs2JpsiPhi_mistagParameter_alt to increase spedd by factor of 3 !
+   This was done by caching all the calls to Exp, ExpSin and ExpCos which had
+   been called multiple times per Evaluate() call too calculate the same thing
+
+2010/02/04 - Greig Cowan 
+ - Modified the Plotter so that plotted data points are scaled by the
+   ratio of the analytic to the numerical integrals. For no angular
+   acceptance corrections this makes no difference but it solves the 
+   incorrect plotting for the case with angular acceptances.
+   
+2010/02/02 - Greig Cowan 
+ - Put in check in when loading ntuple from root file so that we do
+   not use a null pointer in the case where the user has not specified
+   the correct ntuple path location on the file.
+
+2010/02/01 - Greig Cowan 
+ - Palindrome!
+ - Fixed bug in Bs2JpsiPhi_mistagParameter_alt which was incorrectly
+   handling average acceptance weights due to wrong order of f4/f5 terms.
+   Still need to find out why this PDF gives very slightly different
+   numbers compared to canonical PDF for a tagged fit. Untagged fits are
+   the same.
+
+2010/01/31 - Greig Cowan 
+ - Added ability to apply a cut to an ntuple which is being loaded
+   into memory. Use the <CutString> tag inside a <DataSet>.
+ - Added Bs2JpsiPhi transversity S-wave terms to Mathematics namespace.
+ - Update todo list. 
+ 
+2010/01/29 - Greig Cowan 
+ - Fixed reading in of data file. Now does not get stuck in 
+   infinite loop if you specify more events than are in the file.
+   It now just reads in the maximum amount that are consistent with
+   the PhaseSpaceBoundary.
+
+2010/01/29 - Ailsa Sparkes 
+ - Created Bd2JPsiKstar PDF. Still testing!
+
+2010/01/26 - Pete Clarke
+  - Updated Bs2JPsiPhi_mistagParameter_alt to include a time offset and the 
+    six angular acceptance functions.
+
+2010/01/23 - Greig Cowan
+  - Added double gaussian time resolution to
+    Bs2JpsiPhi_mistagParameter_withTimeRes_withAverageAngAcc PDF.
+    Fits to MC09 with flat acceptance look good. Furhter testing
+    essential.
+  - Modified scripts for generating acceptance surface and calculating
+    angular integrals.
+
+2010/01/23 - Pete Clarke
+  - Updated Bs2JPsiPhi_mistagParameter_alt to perform time resolution
+    with 2 Gaussians.
+
+2010/01/22 - Greig Cowan
+  - Added Bs2JpsiPhi_mistagParameter_withTimeRes_withAverageAngAcc PDF.
+    Time resolution part still to be implemented but should be easy
+    using the functions in the Mathematics namespace. This new PDF uses
+    a new structure. First, all physics parameters now have corresponding
+    member variables, meaning that getPhysicsParameters just needs to be 
+    called once in the SetPhysicsParameters() method. In addition, the 6
+    angular functions have been moved to the Mathematics namespace so
+    that there is a common place for this information that everyone should
+    use. All PDFs should switch to using these functions.
+  - Bs2JpsiPhi_mistagParameter_withTimeRes_withAverageAngAcc PDF now
+    working with a single gaussian time resolution! Need to now get double
+    coded up.
+
+2010/01/20 - Greig Cowan
+  - Finished Bs2JpsiPhi_mistagParameter_withTimeRes and corresponding
+    helper functions in Mathematics namespace. With time resolution off
+    this PDF gives identical result to Bs2JpsiPhi_mistagParameter (which
+    knows nothing about time resolution). This means we can remove 
+    Bs2JpsiPhi_mistagParameter altogether and if we want to use it again, 
+    just set timeRes=0 in Bs2JpsiPhi_mistagParameter_withTimeRes. Still
+    need to get ExpCosInt and ExpSinInt to work between arbitrary limits.
+
+2010/01/19 - Greig Cowan
+  - IMPORTANT: changed default integration to ANALYTIC when there is
+    a difference between the numerical and analytic integrations of a
+    PDF. This is needed for the moment to get the angular acceptance
+    PDFs to work.
+  - Added average angular acceptance Bs2JpsiPhi PDF.
+  - Added helper script to save plotting output to file.
+  - Added Bs2JpsiPhi_mistagParameter_withTimeRes PDF. Not finished yet.
+  - Renamed Bs2JpsiPhi_withTimeRes to Bs2JPsiPhi_mistagObservable_withTimeRes.
+
+2010/01/11 - Greig Cowan
+  - Minor bug fixes, AngAcc PDF now compiles, plotting changes.
+  - Limited the precision that rapidresults prints out to improve
+    readability.
+
+2010/01/03 - Greig Cowan
+  - Fixed Makefile so that rapidresults compiles into an executable.
+
+2009/12/22 - Pete Clarke
+  - Added Mathematics namespace code to do Exp(), ExpCos(), ExpSin() with or without time res
+  - Updated Bs2JPsiPhi_mistag_Parameter_alt to use Mathematics::
+  - Updated Bs2DsPi_mistagParameter to use Mathematics::
+  - Added Bs2DsPiBkg_withTimeRes
+
+2009/12/22 - Greig Cowan
+ - Changed basic DsPi PDF to use integration between tmin and tmax.
+ - Added Mathematics namespace to hold common code that is used in PDFs
+   such as convolutions of gaussians with trigonometric functions. Empty
+   for the moment.
+
+2009/12/18 - Greig Cowan
+ - Fixed the trunk by removing references to BenIntegrator and DataFileLoader.
+
+2009/12/17 - Ben Wynne
+ - Added ability to combine multiple data sources
+ - Added sWeight precalculator for background subtraction
+ - Moved DataFileLoader code into new class that creates DataSets - 
+   DataSetConfiguration
+
+2009/12/16 - Greig Cowan
+ - Modified RootFileLoader class so that it creates dataset with
+   number of events specified. Previously was just reading through the
+   number of events but this is not sufficient if some events are
+   thrown away due to being outside of the PSB.
+
+2009/12/15 - Greig Cowan
+ - Refactored all PDFs to more regular naming convention. Updated 
+   config files as well. Fixed bug in Bs2JpsiPhi_mistagObservable
+   PDF where a tmax was used rather than a tmin.
+ - Removed Boost linking from Makefile.
+
+2009/12/10 - Greig Cowan
+ - Changed Bs2JpsiPhiNew PDF so that if integration limit tlow < 0 then 
+   the Evaluate method returns 0.
+
+2009/12/09 - Greig Cowan
+ - Removed angular normalisation constant from the Bs2JpsiPhi background
+   PDFs. 
+ - Changed Bs2JpsiPhiNew PDF so that if integration limit tlow < 0 then it
+   is reset to 0.
+
+2009/12/04 - Ben Wynne
+ - A round-up of lots of changes, because I always forget to write in here
+   - Fixed the various bugs in the function that loads a text file.
+     This included removing all references to the boost library (because it's
+     more trouble than it's worth at the moment).
+   - Added an <Output> tag to the config file.
+     This allows the user to specify whether to do pull plots (and which of
+     the formats - my old one or Conor's new one - to use). The user can also
+     specify contour plots here, fixing all the hard-coded stuff in Greig's
+     code (see 2009/11/26). I've also suppressed the outputting of the contour
+     plots as image files, as it seemed unnecessary. Also added handling for
+     when contour plots are requested for missing or fixed parameters. The user
+     can specify which projections of the function to produce with the Plotter.
+   - The XML config reader has been beefed up a lot
+     The XML parsing will now catch and report malformed XML errors, rather
+     than just segfaulting. The outputting of all free text inside the
+     <RapidFit> base tag now works again, allowing config files to include
+     helpful comments (as long as they don't contain xml tags). There are now
+     objects like OutputConfiguration (similar idea to PDFWithData) that hold
+     appropriate configuration data and supply methods that rely on it.
+   - There is a general change (suggested by Conor) to a "Fail on any error" model.
+     In the event of unexpected input, RapidFit will fail rather than using default behaviour.
+   - Fixed the bugs with GaussianConstrained parameter
+     The minimum and maximum were being used as such, as well as just a way of defining sigma - fixed
+     The NLL calculation was wrong - fixed
+     Also added the ability to specify such a parameter in xml with mean and sigma, not value, min and max
+   - Changed the structure of FitFunction so that the up value is now returned appropriately for a given sigma value
+   - Added method to ResultFormatter so that different format pull outputs can be selected at run time, not compile time
+   - Structural change in preparation for sFit background subtraction - FitFunction now has a "Precalculation" method.
+   - Looking at producing faster numerical integration: --testRapidIntegrator
+
+2009/12/03 - Greig Cowan
+ - Added beta_s validation configuration directory
+
+2009/11/26 - Greig Cowan
+ - Added ability to plot 1 and 2 sigma contours from result of 
+   a Miniut and Minuit2 fit. For moment, I have hard-coded that
+   we plot the contours of parameters 0 and 1 and use 40 data
+   points. A ROOT file and a .png are produced.
+
+2009/11/25 - Greig Cowan
+ - Fixed LaTeX output. Now replace _ with \_ in parameter names.
+ - Added ability to use per-event weights in the NLL calculation.
+   Weight is 1.0 by default and can be specified by having an
+   Observable with name "eventWeight" defined in the
+   PhaseSpaceBoundary. For generation this should be a discrete
+   value which will be the same for all events. For reading in 
+   from a file, it should have a Minimum of 0.0 and Maximum of 
+   1.0 (or whatever you think appropriate).
+
+2009/11/25 - Greig Cowan
+ - Added correct normalisation for background mass PDF (Pete).
+
+2009/11/23 - Greig Cowan
+ - Removed empty directories from SVN repo.
+ - Got first collisions today!!
+
+2009/11/19 - Conor Fitzpatrick
+ - Fixed a bug in the sWave PDF, added ganga script to run it
+
+2009/11/16 - Greig Cowan
+ - Now pruning the fixed parameters from correlation matrix.
+
+2009/11/16 - Greig Cowan
+ - Added feature to exract correlation matrix from Minuit and
+   Minuit2 and have it printede to screen in a LaTeX formatted
+   table. Still need to prune non-floated parameters.
+
+2009/11/14 - Greig Cowan
+ - Altered Plotter to prevent zero-suppressed plots and limited
+   display of stats box. Time plots use more points than angles.
+   Also tried to get time range altered to go down to t=-1. ROOT
+   is not playing nice. Also now using TMultiGraph and
+   TGraphErrors so this should make it easier to show signal and
+   background components on same plot.
+
+2009/11/13 - Greig Cowan
+ - Added Bs2JpsiPhi prompt background PDF with time resolution.
+ - Fixed Bs2JpsiPhi long lived background PDF with time resolution.
+ - Name of PDF does not have RaPDF_ at the start! Starting to
+   migrate all PDFs to this convention.
+
+2009/11/11 - Greig Cowan
+ - Verified the Bs2JpsiPhi LL background and tidied up the code.
+
+2009/11/11 - Ben Wynne
+ - Implemented interface to Foam event generator. Works a treat!
+
+2009/11/10 - Greig Cowan
+ - Restructured code to separate framework and physics PDFs.
+
+2009/11/05 - Greig Cowan
+ - Added feature to main.cpp to allow automatic plotting of a
+   PDF on a loaded dataset.
+ - Propertime resolution for Bs2JpsiPhi now appears to be working
+   for the case of using average resolution (i.e., just 
+   convolution of a double Gaussian) but fit takes long time.
+   Need to check caching. Per-event resolution needs to be 
+   validated also.
+ - Default sampling of PDF increased to 128 points from 16.
+
+2009/11/03 - Greig Cowan
+ - Added BD2JpsiPhi PDF with analytic time resolution. To be 
+   checked!!
+
+2009/11/01 - Greig Cowan
+ - Implemented RootFileDataSet and Root file -> MemoryDataSet
+   loader function. Both give identical results to Ascii file
+   method but RootFileDataSet currently about 50% slower. Ntuples
+   must have branch names the same as Observable names specified
+   in XML.
+ - Two helper pyROOT scripts for processing of ntuples to get
+   data into a form that can be processed by RapidFit (i.e.,
+   have observable names as the branch names in the ntuple).
+
+2009/10/30 - Conor Fitzpatrick
+ - Added S-wave PDF, RaPDF_Bs2JpsiPhi_sWave.cpp,.h and config file
+
+2009/10/28 - Greig Cowan
+ - Changes made to Fumili minimisation; still not working yet.
+ - Updated todo list after group meeting from 27th Oct.
+
+2009/10/27 - Conor Fitzpatrick
+ - Added #includes for <stdlib.h> in order to fix atoi problem on a 
+   local install
+
+2009/10/22 - Gemma Fardell
+ - Implemented Bs2DsPi PDF and added config file. To be checked!!
+
+2009/10/19 - Greig Cowan
+ - Updated default plot style and added errors to the histograms
+   produced by the Plotter.
+
+2009/10/09 - Greig Cowan
+ - Added classes for dealing with Fumili minimisation. Compiles but
+   does not work yet.
+	
+2009/10/08 - Greig Cowan
+ - Added config file for fitting to the MC09 EvtGen data. Data
+   file also added. Results to this fit are identical to those
+   obtained from Heidelberg and Nikhef fitters. See my log.
+ - Installed graphviz on Mac and configured new Doxygen config
+   file to produce diagrams.
+
+2009/10/07 - Greig Cowan
+ - Added python ROOT script for post-processing of results of
+   multiple toy studies that have been performed on batch and 
+   the outputs merged.
+ - Added todo.list. Please update as we go along.
+ - Added config files for MC09 and DC06 parameters (~same apart
+   from deltaM).
+
+2009/10/06 - Greig Cowan
+ - Fixed normalisation factor in angular terms for Bs2JpsiPhi PDF.
+ - Added JpsiPhi bkg mass PDF.
+ - Added ProdPDF class for creating product of 2 PDFs.
+ - Modified main.cpp so that LaTeX results printed by default.
+ - Physics parameter values changed to use the same ones as in the 
+   Heidelberg note.
+ - Added signal mass PDF and updated the background mass PDFs. Still
+   need to implement the background ones properly and to check them.
+ - Removed compilation of RooFit related classes from Makefile. Still
+   in release and in CVS.
+ - Added scripts directory and two scripts which allow for toy studies
+   to be submitted to Edinburgh Condor through Ganga. Default is to
+   submit 10 subjobs and merge the pullPlots.root output. This will
+   speed up the ability to run large numbers of toys.
+
+2009/10/05 - Greig Cowan
+ - Added placeholders for the prompt Jpsi and long lived background
+   PDFs. Still to be chcked.
+ - Removed the f_sig and f_prompt physics parameters since we now take
+   care of these fractions in the SumPDF class. They are added as 
+   parameters of the fit automatically.
+ - Added fractional part to LL bkg PDF since we did not want to 
+   implement a complex solution for adding two PDFs of the same name.
+
+2009/10/03 - Greig Cowan
+ - MAJOR CHANGE: Restructured the project to split up src, headers and
+   binary objects. 
+
+2009/10/02 - Greig Cowan
+ - MAJOR CHANGE: Added DataPoint to Integral() method of IPDF such that
+   we can have normalisation factors that depend on the DataPoint (such
+   as the B tag, mistag, ...). PDF writers should consider implementing
+   a caching mechanism to ensure that the integral does not have to be 
+   explicitly calculated for each event but rather you pick one of the 
+   pre-calculated factors depending on the value of the observables.
+
+2009/10/01 - Greig Cowan
+ - Added new RaPDF_Bs2JpsiPhi PDF which takes care of normalisation
+ - Based heavily on Andres' code from previous 3-angle analysis
+
+2009/08/01 - Greig Cowan
+ - Added tagging to the RapidFit Bs2JpsiPhi PDF
+ - Added the doc directory and release.notes
