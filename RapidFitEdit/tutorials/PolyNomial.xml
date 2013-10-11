@@ -31,7 +31,7 @@
 	</ParameterSet>
 	<Minimiser>Minuit</Minimiser>
 	<FitFunction>
-        <FunctionName>NegativeLogLikelihoodThreaded</FunctionName>
+        <FunctionName>NegativeLogLikelihoodOpenMP</FunctionName>
 		<Threads>16</Threads>
 	</FitFunction>
 	<ToFit>

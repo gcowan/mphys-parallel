@@ -46,10 +46,6 @@ double NegativeLogLikelihood::EvaluateDataSet( IPDF * TestPDF, IDataSet * TestDa
 	double value = 0.0;
 	DataPoint* temporaryDataPoint=NULL;
 	//bool flag = false;
-    ofstream myfile;
-    myfile.open("time.txt");
-    double time = omp_get_wtime();
-    #pragma omp parallel for default(none) shared(total,TestDataSet,TestPDF) private(value,temporaryDataPoint,integral,weight)  
 	for (int dataIndex = 0; dataIndex < TestDataSet->GetDataNumber(); ++dataIndex)
 	{
 		temporaryDataPoint = TestDataSet->GetDataPoint(dataIndex);
@@ -82,14 +78,10 @@ double NegativeLogLikelihood::EvaluateDataSet( IPDF * TestPDF, IDataSet * TestDa
 
 		if( useWeights ) pointValue *= weight;
 		if( useWeights && weightsSquared ) pointValue *= weight;
-        #pragma omp atomic
 		total+=pointValue;
 
 		//cout << total << " " << value << " " << integral << endl;
 	}
-    time = omp_get_wtime()-time;
-    myfile<<"The time it took to calculate the negative log likelyhood was: "<<time<<std::endl;
-    myfile.close();
 	if( false ) cerr << "PDF evaluates to " << value << endl;
 
 	//Return negative log likelihood
