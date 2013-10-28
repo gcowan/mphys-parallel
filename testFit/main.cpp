@@ -49,7 +49,7 @@ int main(){
     negativeLogs.clear();
     
     //Doing for two to 500 threads to measure the speedup
-    for(int threads=2;threads<500; threads*=2){
+    for(int threads=2;threads<500; threads+=2){
 	omp_set_num_threads(threads);
     	time = omp_get_wtime();
         for(int i=0; i<sigmaLength; i++){
@@ -59,8 +59,8 @@ int main(){
         //finding the min value of loglikelihood 
         minIndex = findMin(negativeLogs);
         time = omp_get_wtime()-time;
-	fprintf(runTimes,"%d %f\n",omp_get_num_threads(),time);
-	fprintf(speedup,"%d %f\n",omp_get_num_threads(),serialTime/time);
+	fprintf(runTimes,"%d %f\n",threads,time);
+	fprintf(speedup,"%d %f\n",threads,serialTime/time);
         negativeLogs.clear();
     }
     fclose(runTimes);
