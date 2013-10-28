@@ -4,8 +4,8 @@
 #include <cmath>
 #include <climits>
 #include <vector>
-#include <iostream>
-#include <chrono>
+#include <stdio.h>
+#include <omp.h>
 
 //Method to find max value in an array returning its index
 int findMax(std::vector<double>);
@@ -15,10 +15,10 @@ int findMin(std::vector<double>);
 int main(){
     const double PI  =3.141592653589793238462;
     double sigma = 0.783;
-    //Creating the timer
-    std::chrono::time_point<std::chrono::system_clock> start, end;
+    FILE * runTimes = fopen("runTimes.dat","w");
+    FILE * speedup = fopen("speedup.dat","w");
     //generating the normally distributed doubles using the box mueller method
-    int length = 10000000;
+    int length = 100000;
     double * data = new double[length];
     srand(time(NULL));
     for(int i =0; i<length; i++){
@@ -33,7 +33,7 @@ int main(){
     int sigmaLength = 1000;
     std::vector<double> negativeLogs;
     negativeLog test;
-    start = std::chrono::system_clock::now();
+    double time = omp_get_wtime();
     for(int i=0; i<sigmaLength; i++){
         double sigmaVal = (((double) i)/sigmaLength)*2+0.001;
         negativeLogs.push_back(test.evaluateDataSetSerial(data,length,sigmaVal));
@@ -41,25 +41,30 @@ int main(){
     }
     //finding the min value of loglikelihood 
     int minIndex = findMin(negativeLogs);
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsedSeconds = end-start; 
-    std::cout<<"Serial: The value that fits this gaussian is: "<<(((double) minIndex)/sigmaLength)*2+0.001<<" this took: "<<elapsedSeconds.count()<<" seconds"<<std::endl;
-    
+    time = omp_get_wtime()-time;
+    double serialTime = time;
+    fprintf(runTimes,"%d %f\n",1,serialTime);
+    fprintf(speedup,"%d %f\n",1,1.0);
     //Clearing the vector
     negativeLogs.clear();
-
-    //Creating array to store values of the negative log likelihood 
-    start = std::chrono::system_clock::now();
-    for(int i=0; i<sigmaLength; i++){
-        double sigmaVal = (((double) i)/sigmaLength)*2+0.001;
-        negativeLogs.push_back(test.evaluateDataSetParallel(data,length,sigmaVal));
-        
+    
+    //Doing for two to 500 threads to measure the speedup
+    for(int threads=2;threads<500; threads*=2){
+	omp_set_num_threads(threads);
+    	time = omp_get_wtime();
+        for(int i=0; i<sigmaLength; i++){
+            double sigmaVal = (((double) i)/sigmaLength)*2+0.001;
+            negativeLogs.push_back(test.evaluateDataSetParallel(data,length,sigmaVal));
+        }
+        //finding the min value of loglikelihood 
+        minIndex = findMin(negativeLogs);
+        time = omp_get_wtime()-time;
+	fprintf(runTimes,"%d %f\n",omp_get_num_threads(),time);
+	fprintf(speedup,"%d %f\n",omp_get_num_threads(),serialTime/time);
+        negativeLogs.clear();
     }
-    //finding the min value of loglikelihood 
-    minIndex = findMin(negativeLogs);
-    end = std::chrono::system_clock::now();
-    elapsedSeconds = end-start; 
-    std::cout<<"Parallel: The value that fits this gaussian is: "<<(((double) minIndex)/sigmaLength)*2+0.001<<" this took: "<<elapsedSeconds.count()<<" seconds"<<std::endl;
+    fclose(runTimes);
+    fclose(speedup); 
     return 0;
 
 
