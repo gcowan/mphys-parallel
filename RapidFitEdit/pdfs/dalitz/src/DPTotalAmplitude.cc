@@ -90,7 +90,8 @@ double DPTotalAmplitude::matrixElement(double m23, double cosTheta1, double cosT
 					cosTheta1,  cosTheta2, phi, pionID, 0.105, 0.105, 0.13957018, 0.493677,
 					pMuPlus, pMuMinus, pPi, pK);
   TLorentzVector pB(0,0,0,5.279);
-  TComplex Zamps[ZComponents.size()][3][3];
+  TComplex Zamps[1][3][3];
+  //TComplex Zamps[ZComponents.size()][3][3];
   // Component [i][1][j] is intentionally not filled
   for (unsigned int i=0;i<ZComponents.size();++i)
   {
