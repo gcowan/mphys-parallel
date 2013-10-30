@@ -28,9 +28,9 @@ SVN_PDF_REV ="$(shell svnversion -n ./pdfs)"
 BUILD_DATE ="$(shell date +%H:%M_%F)"
 
 #		Compiler Flags
-CXXFLAGS_BASE  = -DSVN_REV=$(SVN_REV) -DSVN_PDF_REV=$(SVN_PDF_REV) -DBUILD_DATE=$(BUILD_DATE) -rdynamic -D_GNU_SOURCE -D__USE_GNU -fPIC -O3 -m3dnow -ansi -fmerge-all-constants -funroll-all-loops -fno-common -D__ROOFIT_NOBANNER -Wconversion -Wextra -Wsign-compare -Wfloat-equal -Wmissing-noreturn -Wall -Wno-non-virtual-dtor -Wno-reorder -pthread -Wshadow -Wcast-align 
+CXXFLAGS_BASE  = -DSVN_REV=$(SVN_REV) -DSVN_PDF_REV=$(SVN_PDF_REV) -DBUILD_DATE=$(BUILD_DATE) -rdynamic -D_GNU_SOURCE -D__USE_GNU -fPIC -O3 -m3dnow -ansi -fmerge-all-constants -funroll-all-loops -fno-common -D__ROOFIT_NOBANNER -Wconversion -Wextra -Wsign-compare -Wfloat-equal  -Wall -Wno-non-virtual-dtor -Wno-reorder -pthread -Wshadow  
 
-CXX_FLAGS_LITE = -DSVN_REV=$(SVN_REV) -DSVN_PDF_REV=$(SVN_PDF_REV) -DBUILD_DATE=$(BUILD_DATE) -rdynamic -D_GNU_SOURCE -D__USE_GNU -fPIC -O3 -m3dnow -ansi -fmerge-all-constants -funroll-all-loops -fno-common -D__ROOFIT_NOBANNER -Wconversion -Wextra -Wsign-compare -Wfloat-equal -Wmissing-noreturn -Wall -Wno-non-virtual-dtor -Wno-reorder -pthread -Wshadow -Wcast-align
+CXX_FLAGS_LITE = -DSVN_REV=$(SVN_REV) -DSVN_PDF_REV=$(SVN_PDF_REV) -DBUILD_DATE=$(BUILD_DATE) -rdynamic -D_GNU_SOURCE -D__USE_GNU -fPIC -O3 -m3dnow -ansi -fmerge-all-constants -funroll-all-loops -fno-common -D__ROOFIT_NOBANNER -Wconversion -Wextra -Wsign-compare -Wfloat-equal -Wall -Wno-non-virtual-dtor -Wno-reorder -pthread -Wshadow 
 
 #		Some Useful global variables, makes this file MUCH easier to maintain
 SRCEXT    = cpp

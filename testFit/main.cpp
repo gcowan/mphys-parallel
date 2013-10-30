@@ -16,9 +16,9 @@ int main(){
     const double PI  =3.141592653589793238462;
     double sigma = 0.783;
     FILE * runTimes = fopen("runTimes.dat","w");
-    FILE * speedup = fopen("speedup.dat","w");
+     // FILE * speedup = fopen("speedup.dat","w");
     //generating the normally distributed doubles using the box mueller method
-    int length = 100000;
+    int length = 10000000;
     double * data = new double[length];
     srand(time(NULL));
     for(int i =0; i<length; i++){
@@ -33,6 +33,7 @@ int main(){
     int sigmaLength = 1000;
     std::vector<double> negativeLogs;
     negativeLog test;
+    /*
     double time = omp_get_wtime();
     for(int i=0; i<sigmaLength; i++){
         double sigmaVal = (((double) i)/sigmaLength)*2+0.001;
@@ -44,27 +45,29 @@ int main(){
     time = omp_get_wtime()-time;
     double serialTime = time;
     fprintf(runTimes,"%d %f\n",1,serialTime);
-    fprintf(speedup,"%d %f\n",1,1.0);
+     // fprintf(speedup,"%d %f\n",1,1.0);
     //Clearing the vector
     negativeLogs.clear();
-    
+   */ 
+
+
     //Doing for two to 500 threads to measure the speedup
-    for(int threads=2;threads<500; threads+=2){
+    for(int threads=100;threads<500; threads+=2){
 	omp_set_num_threads(threads);
-    	time = omp_get_wtime();
+    	double time = omp_get_wtime();
         for(int i=0; i<sigmaLength; i++){
             double sigmaVal = (((double) i)/sigmaLength)*2+0.001;
             negativeLogs.push_back(test.evaluateDataSetParallel(data,length,sigmaVal));
         }
         //finding the min value of loglikelihood 
-        minIndex = findMin(negativeLogs);
+        int minIndex = findMin(negativeLogs);
         time = omp_get_wtime()-time;
-	fprintf(runTimes,"%d %f\n",threads,time);
-	fprintf(speedup,"%d %f\n",threads,serialTime/time);
+	    fprintf(runTimes,"%d %f\n",threads,time);
+	 // fprintf(speedup,"%d %f\n",threads,serialTime/time);
         negativeLogs.clear();
     }
     fclose(runTimes);
-    fclose(speedup); 
+     // fclose(speedup); 
     return 0;
 
 
