@@ -29,7 +29,6 @@ int main(){
     //Offloading to the Xeon Phi
     #pragma offload target(mic:0) in(data:length(length)) inout(NLLS:length(scanNumber))
     {
-        
         //Iterating over the values of sigma
         omp_set_num_threads(threads);
         for(int i=0 ; i<scanNumber; i++){
@@ -40,7 +39,7 @@ int main(){
             #pragma omp parallel for default(none) shared(sigmaGuess,length,data,oneOverTwoSigSq) reduction(+:NLL) 
             for(int j=0; j<length; j++){
                 double value = exp(-(data[j]*data[j]*oneOverTwoSigSq));
-                double normalisation = sigmaGuess*sqrt(2*PI);
+                double normalisation = normValue();
                 NLL = NLL + log(value/normalisation);
                 
             }
