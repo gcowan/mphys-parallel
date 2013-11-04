@@ -1,5 +1,6 @@
 #include "myGauss.h"
 #include <math.h>
+#include <omp.h>
 
 myGauss::myGauss(double sigmaVal){
     sigma = sigmaVal;
@@ -28,6 +29,18 @@ void myGauss::setSigma(double newSigma){
 double myGauss::evaluate(double value){
     return exp(-value*value*oneOverTwoSigSq);
 };
+
+double myGauss::evaluate(double * dataSet, int dataLength){
+    double NLL = 0;
+    double norm = 1.0/normValue();
+    #pragma omp parallel for default(none) shared(dataSet,dataLength,norm) reduction(+:NLL)
+    for(int i=0; i<dataLength; i++){
+       double evaluated = exp(-dataSet[i]*dataSet[i]*oneOverTwoSigSq);
+       evaluated*=norm;
+       NLL+=log(norm);
+    }
+    return -NLL;
+}
 
 double myGauss::normValue(){
     return sigma*sqrtTwoPi;
