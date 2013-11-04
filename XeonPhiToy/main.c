@@ -24,7 +24,7 @@ int main(){
     }
     double * NLLS = malloc(sizeof(double)*scanNumber);
     FILE * output = fopen("offloaded.dat","w");
-    for(int threads=20; threads<=240; threads+=10){
+    for(int threads=200; threads<=240; threads+=10){
     double time = omp_get_wtime();
     //Offloading to the Xeon Phi
     #pragma offload target(mic:0) in(data:length(length)) inout(NLLS:length(scanNumber))
@@ -39,7 +39,7 @@ int main(){
             #pragma omp parallel for default(none) shared(sigmaGuess,length,data,oneOverTwoSigSq) reduction(+:NLL) 
             for(int j=0; j<length; j++){
                 double value = exp(-(data[j]*data[j]*oneOverTwoSigSq));
-                double normalisation = normValue();
+                double normalisation = sigmaGuess*sqrt(2*PI);
                 NLL = NLL + log(value/normalisation);
                 
             }
