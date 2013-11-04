@@ -37,7 +37,7 @@ double myGauss::evaluate(double * dataSet, int dataLength){
     for(int i=0; i<dataLength; i++){
        double evaluated = exp(-dataSet[i]*dataSet[i]*oneOverTwoSigSq);
        evaluated*=norm;
-       NLL+=log(norm);
+       NLL+=log(evaluated);
     }
     return -NLL;
 }
