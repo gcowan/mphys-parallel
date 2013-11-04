@@ -24,7 +24,7 @@ int main(){
     double * NLLS = new double[scanNumber];
     FILE * output = fopen("offloaded.dat","w");
     myGauss gaussp[SIZE];
-    for(int threads = 100; threads<=240; threads+=10){
+    for(int threads = 8; threads<=8; threads+=10){
         double time = omp_get_wtime();
         #pragma offload target(mic:0) in(data:length(length) ) inout(NLLS:length(scanNumber))
         {
