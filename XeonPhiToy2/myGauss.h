@@ -15,6 +15,7 @@ class myGauss{
         double getSigma();
         void  setSigma(double newSigma);
         double evaluate(double xValue);
+        double evaluate(double * dataSet, int dataLength);
         double normValue();
 
 };
