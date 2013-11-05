@@ -28,8 +28,8 @@ double * myExp::generateData(int dataLength){
     srand(time(NULL));
     int i = 0;
     while(i<dataLength){ 
-        double rand1 = ((double)rand())/RAND_MAX;
-        double rand2 = ((double)rand())/RAND_MAX;
+        double rand1 = ((double)rand())/RAND_MAX*10;
+        double rand2 = ((double)rand())/RAND_MAX*10;
         if(rand1<=exp(-paramValue*rand2)){
             output[i] = rand1;
             i++;
