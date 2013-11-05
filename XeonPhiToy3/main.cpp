@@ -13,7 +13,7 @@
 int main(){
     double sigma = -0.783;
     int scanNumber = 1000;
-    int length = 10000000;
+    int length = 100000;
     int threads = 24;
     myFunc * funcp = new myExp(sigma);
     double * data = funcp->generateData(length);
