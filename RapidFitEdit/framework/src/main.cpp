@@ -1593,4 +1593,3 @@ int BuildTemplateXML( RapidFitConfiguration* config )
 	return 0;
 }
 
-
