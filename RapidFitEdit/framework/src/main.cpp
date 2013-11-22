@@ -1593,4 +1593,7 @@ int BuildTemplateXML( RapidFitConfiguration* config )
 	return 0;
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3db65119e7f058673d2fd434ded4b271e958102
