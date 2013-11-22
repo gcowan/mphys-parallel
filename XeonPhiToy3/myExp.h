@@ -2,19 +2,17 @@
 #include <cilk/cilk.h>
 #ifndef MYEXP_H
 #define MYEXP_H
-#pragma offload_attribute (push,_Cilk_shared) 
-class myExp : public  myFunc{
+class _Cilk_shared myExp : public  myFunc{
     public:
         myExp(double expValue);
         myExp();
         ~myExp();
         double getParameter();
         void setParameter(double newExp);
-        double * generateData(int dataLength);
-        double evaluate(double * data, int dataLength);
+        void generateData(int dataLength, double * p);
+        double evaluate(_Cilk_shared double *  data, int dataLength, int threads);
         double normValue();
 
 
 };
-#pragma offload_attribute (pop)
 #endif

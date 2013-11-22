@@ -3,7 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <limits.h>
-
+#include <cilk/cilk.h>
 myExp::myExp(){
     paramValue = -1;
 };
@@ -23,24 +23,22 @@ double myExp::getParameter(){
     return paramValue;
 };
 
-double * myExp::generateData(int dataLength){
-    double * output = new double[dataLength];
+void myExp::generateData(int dataLength, double * p){
+    p = new double[dataLength];
     srand(time(NULL));
     int i = 0;
     while(i<dataLength){ 
-        double rand1 = ((double)rand())/RAND_MAX*10;
-        double rand2 = ((double)rand())/RAND_MAX*10;
-        if(rand1<=exp(-paramValue*rand2)){
-            output[i] = rand1;
+        double rand1 = ((double)rand())/RAND_MAX;
+            p[i] = log(rand1)/paramValue;
             i++;
-        }
+        
     }
-    return output;
 };
 
-double myExp::evaluate(double * dataSet, int dataSetLength){
+double myExp::evaluate(_Cilk_shared double *  dataSet, int dataSetLength, int threads){
     double NLL = 0;
     double norm = 1.0/normValue();
+    omp_set_num_threads(threads);
     #pragma omp parallel for default(none) shared(norm, dataSet, dataSetLength) reduction(+:NLL)
     for(int i=0; i<dataSetLength; i++){
         double value = exp(paramValue*dataSet[i]);

@@ -2,9 +2,7 @@
 #include <cilk/cilk.h>
 #ifndef MYGAUSS_H
 #define MYGAUSS_H
-
-#pragma offload_attribute (push,_Cilk_shared)
-class myGauss: public myFunc {
+class _Cilk_shared myGauss: public myFunc {
     private:
         double oneOverTwoSigSq;
         double sqrtTwoPi;
@@ -14,12 +12,10 @@ class myGauss: public myFunc {
         ~myGauss();
         double getParameter();
         void  setParameter(double newSigma);
-        double * generateData(int outputLength);
+        void generateData(int outputLength , double * p);
         double evaluate(double xValue);
-        double evaluate(double * dataSet, int dataLength);
+        double evaluate(_Cilk_shared double * dataSet, int dataLength, int threads);
         double normValue();
 
 };
-
-#pragma offload_attribute(pop)
 #endif
