@@ -22,21 +22,12 @@ int main(){
         data[i] = sqrt(-2.0*log(rand1))*cos(2*PI*rand2)*sigma;
     }
     double * NLLS = new double[scanNumber];
-<<<<<<< HEAD
-    FILE * output = fopen("onhost.dat","w");
+    FILE * output = fopen("unoffloaded.dat","w");
     myGauss gaussp[SIZE];
     for(int threads = 1; threads<=24; threads+=1){
         double time = omp_get_wtime();
          // #pragma offload target(mic:0) in(data:length(length) ) inout(NLLS:length(scanNumber))
-         // {
-=======
-    FILE * output = fopen("offloaded.dat","w");
-    myGauss gaussp[SIZE];
-    for(int threads = 100; threads<=240; threads+=10){
-        double time = omp_get_wtime();
-        #pragma offload target(mic:0) in(data:length(length) ) inout(NLLS:length(scanNumber))
         {
->>>>>>> c3db65119e7f058673d2fd434ded4b271e958102
             omp_set_num_threads(threads);
             for(int i=0 ; i<scanNumber; i++){
                 double sigmaGuess = i*0.001+0.001;
@@ -44,11 +35,7 @@ int main(){
                 //Calculating the negative loglikeliHood
                 NLLS[i]=gaussp[0].evaluate(data,length);
             }
-<<<<<<< HEAD
-         // }
-=======
         }
->>>>>>> c3db65119e7f058673d2fd434ded4b271e958102
 
     
     //Finding the minimum on the host

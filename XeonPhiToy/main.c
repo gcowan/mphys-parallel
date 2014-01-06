@@ -23,15 +23,15 @@ int main(){
         data[i] = sqrt(-2.0*log(rand1))*cos(2*PI*rand2)*sigma;
     }
     double * NLLS = malloc(sizeof(double)*scanNumber);
-    FILE * output = fopen("offloaded.dat","w");
-    for(int threads=200; threads<=240; threads+=10){
+    FILE * output = fopen("unoffloaded.dat","w");
+    for(int threads=1; threads<=24; threads+=1){
     double time = omp_get_wtime();
     //Offloading to the Xeon Phi
-    #pragma offload target(mic:0) in(data:length(length)) inout(NLLS:length(scanNumber))
+  //  #pragma offload target(mic:0) in(data:length(length)) inout(NLLS:length(scanNumber))
     {
         //Iterating over the values of sigma
         omp_set_num_threads(threads);
-        for(int i=0 ; i<scanNumber; i++){
+        for(int i=0; i<scanNumber; i++){
             double sigmaGuess = i*0.001+0.001;
             //Calculating the negative loglikeliHood
             double NLL = 0;
