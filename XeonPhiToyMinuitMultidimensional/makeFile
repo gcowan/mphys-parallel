@@ -1,0 +1,4 @@
+CC=icpc
+FLAGS=-openmp
+MAINFLAGS=`root-config --libs --cflags` -lMinuit
+
