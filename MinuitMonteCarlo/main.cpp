@@ -14,10 +14,8 @@
 #pragma offload_attribute(pop)
 #include "TMinuit.h"
 
-#define dimensions 10
 
 using namespace std;
-_Cilk_shared myGauss gauss(dimensions);
 _Cilk_shared  myFunc * _Cilk_shared  funcp;
 _Cilk_shared const int length = 100000;
 _Cilk_shared  double  *  _Cilk_shared  data;  
@@ -41,8 +39,7 @@ void _Cilk_shared funcn(Int_t & npar, Double_t * deriv, Double_t& f, Double_t * 
 
 
 int main(){
-    funcp = &gauss;
-    for(int i=0; i<dimensions; i++){
+   /* for(int i=0; i<dimensions; i++){
         funcp->setParameter(i,0.783);
     };
     data =  (_Cilk_shared double * ) _Offload_shared_aligned_malloc(sizeof(double)*length*dimensions,64);
@@ -66,5 +63,20 @@ int main(){
     min.Migrad();
     time = omp_get_wtime()-time;
     printf("That fit took %f seconds\n",time);
+    */
+    double * limits;
+    for(int dimensions=1;dimensions<10;dimensions++){
+        myGauss gauss(dimensions);
+        limits = (double *)malloc(sizeof(double)*dimensions*2);
+        for(int i=0; i<dimensions; i++){
+            limits[2*i] = -5.0;
+            limits[(2*i)+1] = 5.0;
+        }
+        double trueNorm = gauss.normValue();
+        double vegasEstimate = gauss.integrateVegas(limits);
+        free(limits);
+        printf("Dimensions: %d True Value: %f Vegas Estimate: %f\n",dimensions,trueNorm,vegasEstimate);
+    }
+
     return 0;
 };

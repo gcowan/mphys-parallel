@@ -13,10 +13,10 @@ myGauss::myGauss(int numSigmas,  double *  paramValues){
     paramValue = paramValues;
     dimensions = numSigmas;
     //CHANGE SEED WHEN YOU KNOW IT WORKS
-    vslNewStream(&stream, VSL_BRNG_SFMT19937,3864368);
+    vslNewStream(&stream, VSL_BRNG_SFMT19937,38368);
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     for(int i=0; i<numSigmas; i++){
-        oneOverTwoSigsSq[i] = 1.0/2*(paramValue[i]*paramValue[i]);
+        oneOverTwoSigsSq[i] = 1.0/(2*(paramValue[i]*paramValue[i]));
     }
     sqrtTwoPi = sqrt(2*PI);
 };
@@ -25,11 +25,11 @@ myGauss::myGauss(int numSigmas){
     paramValue = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     //CHANGE SEED WHEN YOU KNOW IT WORKS
-    vslNewStream(&stream, VSL_BRNG_SFMT19937,3864368);
+    vslNewStream(&stream, VSL_BRNG_SFMT19937,38368);
     dimensions = numSigmas;
     for(int i=0; i<numSigmas; i++){
         paramValue[i]=1.0;
-        oneOverTwoSigsSq[i] = 1.0/2*(paramValue[i]*paramValue[i]);
+        oneOverTwoSigsSq[i] = 1.0/(2*(paramValue[i]*paramValue[i]));
     };
     sqrtTwoPi = sqrt(2*PI);
 };
@@ -83,7 +83,8 @@ double myGauss::evaluate( double * dataSet, int dataLength, int threads ){
 
 //Method to get the normalization value
 double myGauss::normValue(){
-     srand(time(NULL));
+    //This is regular monte carlo integration
+/*     srand(time(NULL));
      double integral=0;
      double eval;
      int lower = -1;
@@ -102,14 +103,14 @@ double myGauss::normValue(){
      };
      integral /= nsamples;
      integral*=(higher-lower);
-
-     double  output = paramValue[0]*sqrtTwoPi;
+*/
+     double output = paramValue[0]*sqrtTwoPi;
      for(int i=1; i<dimensions; i++){
          output *= paramValue[i]*sqrtTwoPi;
      };
-     printf("Integral is:%f\n",integral);
-     printf("Maths prediction=%f\n",output);
-     return integral;
+      // printf("Integral is:%f\n",integral);
+      // printf("Maths prediction=%f\n",output);
+     return output;
 };
 
 
@@ -130,8 +131,10 @@ int myGauss::getDimensions(){
 };
 
 //Method to return random doubles generated between limits
-double myGauss::randDouble(int lower, int higher){ 
+double myGauss::randDouble(double lower, double higher){ 
     double val;
+    //printf("lower=%f higher=%f\n",lower,higher);
+    
     vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,stream,1,&val,lower,higher);
     return val;
 };
@@ -139,15 +142,20 @@ double myGauss::randDouble(int lower, int higher){
 //Integration using the vegas algorithm
 double myGauss::integrateVegas(double * limits){
     //How many iterations to perform
-    int iterations = 10;
+    int iterations = 20;
     //How many points to sample in total
-    int samples = 10000000;
+    int samples = 100000;
     //How many intervals for each dimension
-    int intervals = 10;
+    int intervals = 20;
     //How many subIntervals
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
-    double alpha = 0.2;
+    double alpha = 1.2;
+    //double to store volume integrated over
+    double volume = 1.0;
+    for(int i=0; i<dimensions; i++){
+        volume*= (limits[(2*i)+1]-limits[2*i]);
+    };
     //Number of boxes
     int numBoxes = intervals;
     for(int i=1; i<dimensions; i++){
@@ -168,9 +176,9 @@ double myGauss::integrateVegas(double * limits){
     double * subWidths = (double *) _Offload_shared_aligned_malloc(sizeof(double)*intervals,64);
     //Getting initial limits for the boxes 
     for(int i=0; i<dimensions; i++){
-        double boxWidth = (limits[i+1]-limits[i])/intervals;
+        double boxWidth = (limits[(2*i)+1]-limits[2*i])/intervals;
         //0th iteration
-        boxLimits[i*(intervals+1)] = limits[i];
+        boxLimits[i*(intervals+1)] = limits[2*i];
         for(int j=1; j<=intervals; j++){
             int x = (i*(intervals+1))+j;
             boxLimits[x] =  boxLimits[x-1]+boxWidth;
@@ -202,7 +210,9 @@ double myGauss::integrateVegas(double * limits){
         } 
         //Calculating the values of sigma and the integral
         integral[iter] /= samples;
+        integral[iter] *= volume;
         sigmas[iter] /= samples;
+        sigmas[iter] *= volume*volume;
         sigmas[iter] -= (integral[iter]*integral[iter]);
         sigmas[iter] /= (samples-1);
 
@@ -210,7 +220,6 @@ double myGauss::integrateVegas(double * limits){
         //Creating array to store values of m and their sum 
         int totalM=0; 
         //Doing for each dimension seperately
-        //May be a bug in this for loop TEST
         for(int i=0; i<dimensions; i++){
             double sum = 0;
             //Getting the sum of f*delta x
@@ -224,7 +233,7 @@ double myGauss::integrateVegas(double * limits){
                 int x = (i*(intervals))+j;
                 double value = heights[x]*(boxLimits[x+1+i]-boxLimits[x+i]);
                 mValues[j] = ceil(subIntervals*pow((value-1)*(1.0/log(value)),alpha));
-                subWidths[j] = boxLimits[x+1+i]-boxLimits[x+i]/mValues[j];
+                subWidths[j] = (boxLimits[x+1+i]-boxLimits[x+i])/mValues[j];
                 totalM += mValues[j];
             }
             int mPerInterval = totalM/intervals;
@@ -255,6 +264,10 @@ double myGauss::integrateVegas(double * limits){
         for(int i=0; i<intervals*dimensions; i++ ){
             heights[i] = 0;
         }
+        //Stepping up to more samples when grid calibrated
+        if(iter==10){
+            samples = 10000000;
+        }
     }
 
     //All iterations done 
@@ -267,15 +280,16 @@ double myGauss::integrateVegas(double * limits){
     //Calculating the final value of the integral
     double denom = 0;
     double numerator =0;
-    for(int i=0; i<iterations; i++){
-        numerator += integral[i]*(integral[i]*integral[i]/(sigmas[i]*sigmas[i]));
-        denom += (integral[i]*integral[i]/(sigmas[i]*sigmas[i]));
+    for(int i=10; i<iterations; i++){
+        numerator += integral[i]*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
+        denom += ((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
+        printf("integral=%f sigma=%f\n",integral[i],sigmas[i]);
     }
     double output  = numerator/denom;
     //Calculating value of x^2 to check if result can be trusted
     double chisq = 0;
-    for(int i=0; i<iterations; i++){
-       chisq += ((integral[i]-output)*(integral[i]-output)/(output*output))*(integral[i]*integral[i]/(sigmas[i]*sigmas[i]));
+    for(int i=10; i<iterations; i++){
+       chisq += (((integral[i]-output)*(integral[i]-output))/(output*output))*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
     }
     if(chisq>iterations){
         printf("Chisq value is %f, it should be not much greater than %d (iterations-1)\n",chisq,iterations-1);

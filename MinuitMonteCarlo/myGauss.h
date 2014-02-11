@@ -20,7 +20,7 @@ class _Cilk_shared myGauss: public myFunc {
         double evaluate( double * dataSet, int dataLength, int threads);
         double normValue();
         int getDimensions();
-        double randDouble(int,int);
+        double randDouble(double,double);
         double integrateVegas(double * lower);
 
 
