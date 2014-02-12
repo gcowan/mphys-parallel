@@ -12,6 +12,6 @@ class _Cilk_shared myFunc{
          virtual double getParameter(int paraIndex)=0;
          virtual double normValue()=0;
          virtual int getDimensions()=0;
-         virtual double integrateVegas(double *)=0;
+         virtual double integrateVegas( double *, int)=0;
 };
 #endif

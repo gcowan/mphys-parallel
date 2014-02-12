@@ -65,17 +65,20 @@ int main(){
     printf("That fit took %f seconds\n",time);
     */
     double * limits;
+    int threads = 2;
     for(int dimensions=1;dimensions<10;dimensions++){
         myGauss gauss(dimensions);
         limits = (double *)malloc(sizeof(double)*dimensions*2);
         for(int i=0; i<dimensions; i++){
-            limits[2*i] = -5.0;
-            limits[(2*i)+1] = 5.0;
+            limits[2*i] = -2.0;
+            limits[(2*i)+1] = 2.0;
         }
         double trueNorm = gauss.normValue();
-        double vegasEstimate = gauss.integrateVegas(limits);
+        double time = omp_get_wtime();
+        double vegasEstimate = gauss.integrateVegas(limits, threads);
+        time = omp_get_wtime()-time;
         free(limits);
-        printf("Dimensions: %d True Value: %f Vegas Estimate: %f\n",dimensions,trueNorm,vegasEstimate);
+        printf("Dimensions: %d True Value: %f Vegas Estimate: %f That took %f seconds\n",dimensions,trueNorm,vegasEstimate,time);
     }
 
     return 0;

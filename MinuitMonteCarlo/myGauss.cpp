@@ -12,8 +12,17 @@
 myGauss::myGauss(int numSigmas,  double *  paramValues){
     paramValue = paramValues;
     dimensions = numSigmas;
+    int threads;
     //CHANGE SEED WHEN YOU KNOW IT WORKS
-    vslNewStream(&stream, VSL_BRNG_SFMT19937,38368);
+    #pragma omp parallel
+    {
+        threads = omp_get_num_threads();
+    }
+    //Setting up one random number stream for each thread
+    streams = (_Cilk_shared VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
+    for(int i=0; i<threads; i++){
+        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,38368);
+    }
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     for(int i=0; i<numSigmas; i++){
         oneOverTwoSigsSq[i] = 1.0/(2*(paramValue[i]*paramValue[i]));
@@ -24,8 +33,18 @@ myGauss::myGauss(int numSigmas,  double *  paramValues){
 myGauss::myGauss(int numSigmas){
     paramValue = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
+    int threads;
     //CHANGE SEED WHEN YOU KNOW IT WORKS
-    vslNewStream(&stream, VSL_BRNG_SFMT19937,38368);
+    #pragma omp parallel
+    {
+        threads = omp_get_num_threads();
+    }
+    //Setting up one random number stream for each thread
+    streams = (_Cilk_shared VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
+    for(int i=0; i<threads; i++){
+        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,38368);
+    }
+    //CHANGE SEED WHEN YOU KNOW IT WORKS
     dimensions = numSigmas;
     for(int i=0; i<numSigmas; i++){
         paramValue[i]=1.0;
@@ -39,6 +58,7 @@ myGauss::myGauss(int numSigmas){
 myGauss::~myGauss(){
     _Offload_shared_aligned_free(paramValue);
     _Offload_shared_aligned_free(oneOverTwoSigsSq);
+    _Offload_shared_aligned_free(streams);
 };
 
 //Method to get a particular parameter
@@ -131,16 +151,19 @@ int myGauss::getDimensions(){
 };
 
 //Method to return random doubles generated between limits
-double myGauss::randDouble(double lower, double higher){ 
+double myGauss::randDouble(double lower, double higher, int thread){ 
     double val;
-    //printf("lower=%f higher=%f\n",lower,higher);
+    if(lower>higher || higher != higher || lower != lower )
+    printf("lower=%f higher=%f\n",lower,higher);
     
-    vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,stream,1,&val,lower,higher);
+    vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[thread],1,&val,lower,higher);
     return val;
 };
 
 //Integration using the vegas algorithm
-double myGauss::integrateVegas(double * limits ){
+double myGauss::integrateVegas(double * limits , int threads){
+    //Setting the number of threads
+    omp_set_num_threads(threads);
     //How many iterations to perform
     int iterations = 20;
     //How many points to sample in total
@@ -150,7 +173,7 @@ double myGauss::integrateVegas(double * limits ){
     //How many subIntervals
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
-    double alpha = 1.2;
+    double alpha = 0.2;
     //double to store volume integrated over
 /*    double volume = 1.0;
     for(int i=0; i<dimensions; i++){
@@ -186,33 +209,70 @@ double myGauss::integrateVegas(double * limits ){
         }
     };
     //Pointer to store random generated  numbers
-    double * randomNums = (double *)_Offload_shared_aligned_malloc(sizeof(double)*dimensions,64);
-    int * binNums = (int *)_Offload_shared_aligned_malloc(sizeof(int)*dimensions,64);
+    double  randomNums [dimensions];
+    int  binNums [dimensions];
     //Double to store p(x) denominator for monte carlo
     double prob;
+    //Values to store integral and sigma for each thread so they can be reduced in OpenMp
+    double integralTemp;
+    double sigmaTemp;
+    double heightsTemp[dimensions*intervals];
+    int threadNum;
     for(int iter=0; iter<iterations; iter++){ 
         //Performing  iterations
-        for(int i=0; i<samples; i++){
-            prob = 1;
-            viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,stream,dimensions,binNums,0,intervals);
-            //Getting samples from bins
-            for(int j=0; j<dimensions; j++){
-                int x = ((intervals+1)*j)+binNums[j];
-                randomNums[j] = randDouble(boxLimits[x],boxLimits[x+1]);
-                prob *= 1.0/(intervals*(boxLimits[x+1]-boxLimits[x]));
-            }
-            //Performing evaluation of function and adding it to the total integral
-            double eval = evaluate(randomNums);
-            integral[iter] += eval/prob;
-            sigmas[iter] += (eval*eval)/(prob*prob);
-            //Calculating the values of f for bin resising
-            for(int j=0; j<dimensions; j++){
-                int x = binNums[j]+(j*intervals);
-                //May need to initialize heights
-                heights[x] += eval;
+
+        #pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp ) shared(samples,boxLimits,iter,intervals, integral, sigmas, heights, threads) 
+        {
+            for(int i=0; i<dimensions*intervals; i++){
+                heightsTemp[i] = 0;
             }
 
-        } 
+            integralTemp = 0; 
+            sigmaTemp = 0;
+           //Getting chunk sizes for each thread
+            threadNum = omp_get_thread_num();
+            int seg = ceil((double)samples/threads);
+            int lower = seg*threadNum;
+            int upper = seg*(threadNum+1);
+            if(upper > samples){
+                upper = samples;
+            };
+            //Spliting monte carlo up
+            for(int i=0; i<seg; i++){
+                prob = 1;
+                //Randomly choosing bins to sample from
+                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,(int*)&binNums,0,intervals);
+                //Getting samples from bins
+                for(int j=0; j<dimensions; j++){
+                    int x = ((intervals+1)*j)+binNums[j];
+                    randomNums[j] = randDouble(boxLimits[x],boxLimits[x+1],threadNum);
+                    prob *= 1.0/(intervals*(boxLimits[x+1]-boxLimits[x]));
+                }
+                //Performing evaluation of function and adding it to the total integral
+                double eval = evaluate(randomNums);
+                integralTemp += eval/prob;
+                sigmaTemp += (eval*eval)/(prob*prob);
+                //Calculating the values of f for bin resising
+                for(int j=0; j<dimensions; j++){
+                    int x = binNums[j]+(j*intervals);
+                    //May need to initialize heights
+                    // #pragma omp atomic
+                     // printf("heightsTemp before=%f\n",heightsTemp[x]);
+                    heightsTemp[x] += eval;
+                     // printf("heightsTemp=%f x=%d eval=%f thread=%d\n",heightsTemp[x],x,eval,omp_get_thread_num());
+                }
+
+            } 
+            #pragma omp critical
+            {
+              integral[iter] += integralTemp;
+              sigmas[iter] += sigmaTemp;
+              for(int k=0; k<dimensions*intervals; k++){
+                   // printf("heightTemp[k]=%f k=%d\n",heightsTemp[k],k);
+                  heights[k] += heightsTemp[k];
+              }
+            }
+        }
         //Calculating the values of sigma and the integral
         integral[iter] /= samples;
          // integral[iter] *= volume;
@@ -285,7 +345,7 @@ double myGauss::integrateVegas(double * limits ){
     //Calculating the final value of the integral
     double denom = 0;
     double numerator =0;
-    for(int i=10; i<iterations; i++){
+    for(int i=0; i<iterations; i++){
         numerator += integral[i]*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
         denom += ((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
         printf("integral=%f sigma=%f\n",integral[i],sigmas[i]);
@@ -293,7 +353,7 @@ double myGauss::integrateVegas(double * limits ){
     double output  = numerator/denom;
     //Calculating value of x^2 to check if result can be trusted
     double chisq = 0;
-    for(int i=10; i<iterations; i++){
+    for(int i=0; i<iterations; i++){
        chisq += (((integral[i]-output)*(integral[i]-output))/(output*output))*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
     }
     if(chisq>iterations){

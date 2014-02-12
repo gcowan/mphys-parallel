@@ -7,7 +7,7 @@ class _Cilk_shared myGauss: public myFunc {
     private:
         double * oneOverTwoSigsSq;
         double sqrtTwoPi;
-        VSLStreamStatePtr  stream;
+        VSLStreamStatePtr * streams;
 
     public:
         myGauss(int numSigmas , double *   sigmas);
@@ -20,8 +20,8 @@ class _Cilk_shared myGauss: public myFunc {
         double evaluate( double * dataSet, int dataLength, int threads);
         double normValue();
         int getDimensions();
-        double randDouble(double,double);
-        double integrateVegas(double *  );
+        double randDouble(double,double, int thread);
+        double integrateVegas( double * , int threads );
 
 
 };
