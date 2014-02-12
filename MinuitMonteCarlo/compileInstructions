@@ -1,1 +1,0 @@
-icpc -O3 -openmp -vec-report2 -o prog *.cpp

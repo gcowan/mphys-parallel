@@ -140,22 +140,23 @@ double myGauss::randDouble(double lower, double higher){
 };
 
 //Integration using the vegas algorithm
-double myGauss::integrateVegas(double * limits){
+double myGauss::integrateVegas(double * limits ){
     //How many iterations to perform
     int iterations = 20;
     //How many points to sample in total
     int samples = 100000;
     //How many intervals for each dimension
-    int intervals = 20;
+    int intervals = 10;
     //How many subIntervals
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
     double alpha = 1.2;
     //double to store volume integrated over
-    double volume = 1.0;
+/*    double volume = 1.0;
     for(int i=0; i<dimensions; i++){
         volume*= (limits[(2*i)+1]-limits[2*i]);
     };
+    */
     //Number of boxes
     int numBoxes = intervals;
     for(int i=1; i<dimensions; i++){
@@ -187,19 +188,23 @@ double myGauss::integrateVegas(double * limits){
     //Pointer to store random generated  numbers
     double * randomNums = (double *)_Offload_shared_aligned_malloc(sizeof(double)*dimensions,64);
     int * binNums = (int *)_Offload_shared_aligned_malloc(sizeof(int)*dimensions,64);
+    //Double to store p(x) denominator for monte carlo
+    double prob;
     for(int iter=0; iter<iterations; iter++){ 
         //Performing  iterations
         for(int i=0; i<samples; i++){
+            prob = 1;
             viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,stream,dimensions,binNums,0,intervals);
             //Getting samples from bins
             for(int j=0; j<dimensions; j++){
                 int x = ((intervals+1)*j)+binNums[j];
                 randomNums[j] = randDouble(boxLimits[x],boxLimits[x+1]);
+                prob *= 1.0/(intervals*(boxLimits[x+1]-boxLimits[x]));
             }
             //Performing evaluation of function and adding it to the total integral
             double eval = evaluate(randomNums);
-            integral[iter] += eval;
-            sigmas[iter] += (eval*eval);
+            integral[iter] += eval/prob;
+            sigmas[iter] += (eval*eval)/(prob*prob);
             //Calculating the values of f for bin resising
             for(int j=0; j<dimensions; j++){
                 int x = binNums[j]+(j*intervals);
@@ -210,9 +215,9 @@ double myGauss::integrateVegas(double * limits){
         } 
         //Calculating the values of sigma and the integral
         integral[iter] /= samples;
-        integral[iter] *= volume;
+         // integral[iter] *= volume;
         sigmas[iter] /= samples;
-        sigmas[iter] *= volume*volume;
+         // sigmas[iter] *= volume*volume;
         sigmas[iter] -= (integral[iter]*integral[iter]);
         sigmas[iter] /= (samples-1);
 
