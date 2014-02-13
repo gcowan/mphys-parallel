@@ -12,17 +12,7 @@
 myGauss::myGauss(int numSigmas,  double *  paramValues){
     paramValue = paramValues;
     dimensions = numSigmas;
-    int threads;
-    //CHANGE SEED WHEN YOU KNOW IT WORKS
-    #pragma omp parallel
-    {
-        threads = omp_get_num_threads();
-    }
-    //Setting up one random number stream for each thread
-    streams = (_Cilk_shared VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
-    for(int i=0; i<threads; i++){
-        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,38368);
-    }
+
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     for(int i=0; i<numSigmas; i++){
         oneOverTwoSigsSq[i] = 1.0/(2*(paramValue[i]*paramValue[i]));
@@ -33,18 +23,6 @@ myGauss::myGauss(int numSigmas,  double *  paramValues){
 myGauss::myGauss(int numSigmas){
     paramValue = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
-    int threads;
-    //CHANGE SEED WHEN YOU KNOW IT WORKS
-    #pragma omp parallel
-    {
-        threads = omp_get_num_threads();
-    }
-    //Setting up one random number stream for each thread
-    streams = (_Cilk_shared VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
-    for(int i=0; i<threads; i++){
-        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,38368);
-    }
-    //CHANGE SEED WHEN YOU KNOW IT WORKS
     dimensions = numSigmas;
     for(int i=0; i<numSigmas; i++){
         paramValue[i]=1.0;
@@ -58,7 +36,6 @@ myGauss::myGauss(int numSigmas){
 myGauss::~myGauss(){
     _Offload_shared_aligned_free(paramValue);
     _Offload_shared_aligned_free(oneOverTwoSigsSq);
-    _Offload_shared_aligned_free(streams);
 };
 
 //Method to get a particular parameter
@@ -150,20 +127,14 @@ int myGauss::getDimensions(){
     return dimensions;
 };
 
-//Method to return random doubles generated between limits
-double myGauss::randDouble(double lower, double higher, int thread){ 
-    double val;
-    if(lower>higher || higher != higher || lower != lower )
-    printf("lower=%f higher=%f\n",lower,higher);
-    
-    vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[thread],1,&val,lower,higher);
-    return val;
-};
 
 //Integration using the vegas algorithm
 double myGauss::integrateVegas(double * limits , int threads){
     //Setting the number of threads
     omp_set_num_threads(threads);
+    for(int i=0; i<dimensions; i++){
+        printf("OFFLOAD limits lower=%f limits upper=%f\n",limits[2*i],limits[2*i+1]);
+    }
     //How many iterations to perform
     int iterations = 20;
     //How many points to sample in total
@@ -184,6 +155,12 @@ double myGauss::integrateVegas(double * limits , int threads){
     int numBoxes = intervals;
     for(int i=1; i<dimensions; i++){
         numBoxes *= intervals;
+    }
+    //CHANGE SEED WHEN YOU KNOW IT WORKS
+    //Setting up one random number stream for each thread
+    VSLStreamStatePtr * streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
+    for(int i=0; i<threads; i++){
+        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,38368);
     }
     //Arrays to store integral and uncertainty for each iteration
     double * integral = (double *)_Offload_shared_aligned_malloc(sizeof(double)*iterations,64);
@@ -220,8 +197,8 @@ double myGauss::integrateVegas(double * limits , int threads){
     int threadNum;
     for(int iter=0; iter<iterations; iter++){ 
         //Performing  iterations
-
-        #pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp ) shared(samples,boxLimits,iter,intervals, integral, sigmas, heights, threads) 
+        printf("dimensions=%d intervals=%d\n",dimensions,intervals);
+        #pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp ) shared(streams,samples,boxLimits,iter,intervals, integral, sigmas, heights, threads) 
         {
             for(int i=0; i<dimensions*intervals; i++){
                 heightsTemp[i] = 0;
@@ -245,7 +222,7 @@ double myGauss::integrateVegas(double * limits , int threads){
                 //Getting samples from bins
                 for(int j=0; j<dimensions; j++){
                     int x = ((intervals+1)*j)+binNums[j];
-                    randomNums[j] = randDouble(boxLimits[x],boxLimits[x+1],threadNum);
+                    vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],1,randomNums+j,boxLimits[x],boxLimits[x+1]);
                     prob *= 1.0/(intervals*(boxLimits[x+1]-boxLimits[x]));
                 }
                 //Performing evaluation of function and adding it to the total integral
@@ -337,11 +314,14 @@ double myGauss::integrateVegas(double * limits , int threads){
 
     //All iterations done 
     //Free stuff
+    /*
     _Offload_shared_aligned_free(subWidths);
     _Offload_shared_aligned_free(mValues);
     _Offload_shared_aligned_free(binNums);
     _Offload_shared_aligned_free(randomNums);
     _Offload_shared_aligned_free(boxLimits);
+    _Offload_shared_aligned_free(streams);
+    */
     //Calculating the final value of the integral
     double denom = 0;
     double numerator =0;
@@ -359,8 +339,8 @@ double myGauss::integrateVegas(double * limits , int threads){
     if(chisq>iterations){
         printf("Chisq value is %f, it should be not much greater than %d (iterations-1)\n",chisq,iterations-1);
     }
-    _Offload_shared_aligned_free(integral);
-    _Offload_shared_aligned_free(sigmas);
+     // _Offload_shared_aligned_free(integral);
+     // _Offload_shared_aligned_free(sigmas);
     return output;
     
 }

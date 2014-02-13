@@ -20,6 +20,8 @@ _Cilk_shared  myFunc * _Cilk_shared  funcp;
 _Cilk_shared const int length = 100000;
 _Cilk_shared  double  *  _Cilk_shared  data;  
 _Cilk_shared int threads=60;
+_Cilk_shared myGauss gauss(5);
+_Cilk_shared double * _Cilk_shared limits;
 
 //try to trick the compiler
 double _Cilk_shared wrapperFunction(){
@@ -36,6 +38,13 @@ void _Cilk_shared funcn(Int_t & npar, Double_t * deriv, Double_t& f, Double_t * 
      // printf("result=%f\n",result);
      // printf("par1=%f  par2=%f\n",par[0],par[1]);
 };
+
+double _Cilk_shared  wrapperMC(_Cilk_shared double * limits, int threads){
+    printf("Got here\n");
+    return gauss.integrateVegas(limits,threads);
+}
+
+
 
 
 int main(){
@@ -64,22 +73,20 @@ int main(){
     time = omp_get_wtime()-time;
     printf("That fit took %f seconds\n",time);
     */
-    double * limits;
-    int threads = 2;
-    for(int dimensions=1;dimensions<10;dimensions++){
-        myGauss gauss(dimensions);
-        limits = (double *)malloc(sizeof(double)*dimensions*2);
+    int dimensions = 5;
+    limits = (_Cilk_shared double * _Cilk_shared )_Offload_shared_malloc(sizeof(double)*dimensions*2);
+    for(int i=0; i<5; i++){
+        limits[2*i] = -5.0;
+        limits[(2*i)+1] = 5.0;
+    }
         for(int i=0; i<dimensions; i++){
-            limits[2*i] = -2.0;
-            limits[(2*i)+1] = 2.0;
+            printf("limit lower = %f limit upper = %f\n",limits[2*i],limits[2*i+1] );
         }
         double trueNorm = gauss.normValue();
         double time = omp_get_wtime();
-        double vegasEstimate = gauss.integrateVegas(limits, threads);
+        double vegasEstimate =  wrapperMC(limits, threads);
         time = omp_get_wtime()-time;
-        free(limits);
+        _Offload_shared_free(limits);
         printf("Dimensions: %d True Value: %f Vegas Estimate: %f That took %f seconds\n",dimensions,trueNorm,vegasEstimate,time);
-    }
-
     return 0;
 };
