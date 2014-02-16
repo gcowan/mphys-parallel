@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <mkl_vsl.h>
 #define PI 3.141592653589793238462
+#define RESTRICT restrict
 //Number of points to sample in monte carlo integration
 #define nsamples 100000
 
@@ -132,9 +133,6 @@ int myGauss::getDimensions(){
 double myGauss::integrateVegas(double * limits , int threads){
     //Setting the number of threads
     omp_set_num_threads(threads);
-    for(int i=0; i<dimensions; i++){
-        printf("OFFLOAD limits lower=%f limits upper=%f\n",limits[2*i],limits[2*i+1]);
-    }
     //How many iterations to perform
     int iterations = 20;
     //How many points to sample in total
@@ -160,7 +158,7 @@ double myGauss::integrateVegas(double * limits , int threads){
     //Setting up one random number stream for each thread
     VSLStreamStatePtr * streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
     for(int i=0; i<threads; i++){
-        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,38368);
+        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,time(NULL));
     }
     //Arrays to store integral and uncertainty for each iteration
     double * integral = (double *)_Offload_shared_aligned_malloc(sizeof(double)*iterations,64);
@@ -197,7 +195,6 @@ double myGauss::integrateVegas(double * limits , int threads){
     int threadNum;
     for(int iter=0; iter<iterations; iter++){ 
         //Performing  iterations
-        printf("dimensions=%d intervals=%d\n",dimensions,intervals);
         #pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp ) shared(streams,samples,boxLimits,iter,intervals, integral, sigmas, heights, threads) 
         {
             for(int i=0; i<dimensions*intervals; i++){
@@ -218,11 +215,13 @@ double myGauss::integrateVegas(double * limits , int threads){
             for(int i=0; i<seg; i++){
                 prob = 1;
                 //Randomly choosing bins to sample from
-                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,(int*)&binNums,0,intervals);
+                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,binNums,0,intervals);
+                vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,randomNums,0,1);
                 //Getting samples from bins
                 for(int j=0; j<dimensions; j++){
                     int x = ((intervals+1)*j)+binNums[j];
-                    vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],1,randomNums+j,boxLimits[x],boxLimits[x+1]);
+                    randomNums[j] *= (boxLimits[x+1]-boxLimits[x]);
+                    randomNums[j] += boxLimits[x];
                     prob *= 1.0/(intervals*(boxLimits[x+1]-boxLimits[x]));
                 }
                 //Performing evaluation of function and adding it to the total integral
@@ -252,9 +251,7 @@ double myGauss::integrateVegas(double * limits , int threads){
         }
         //Calculating the values of sigma and the integral
         integral[iter] /= samples;
-         // integral[iter] *= volume;
         sigmas[iter] /= samples;
-         // sigmas[iter] *= volume*volume;
         sigmas[iter] -= (integral[iter]*integral[iter]);
         sigmas[iter] /= (samples-1);
 
@@ -308,27 +305,28 @@ double myGauss::integrateVegas(double * limits , int threads){
         }
         //Stepping up to more samples when grid calibrated
         if(iter==10){
-            samples = 10000000;
+            samples = 100000000;
         }
     }
 
     //All iterations done 
     //Free stuff
-    /*
+    
     _Offload_shared_aligned_free(subWidths);
     _Offload_shared_aligned_free(mValues);
     _Offload_shared_aligned_free(binNums);
     _Offload_shared_aligned_free(randomNums);
     _Offload_shared_aligned_free(boxLimits);
     _Offload_shared_aligned_free(streams);
-    */
+    _Offload_shared_aligned_free(heights);
+   
     //Calculating the final value of the integral
     double denom = 0;
     double numerator =0;
     for(int i=0; i<iterations; i++){
         numerator += integral[i]*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
         denom += ((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
-        printf("integral=%f sigma=%f\n",integral[i],sigmas[i]);
+         // printf("integral=%f sigma=%f\n",integral[i],sigmas[i]);
     }
     double output  = numerator/denom;
     //Calculating value of x^2 to check if result can be trusted
@@ -339,8 +337,8 @@ double myGauss::integrateVegas(double * limits , int threads){
     if(chisq>iterations){
         printf("Chisq value is %f, it should be not much greater than %d (iterations-1)\n",chisq,iterations-1);
     }
-     // _Offload_shared_aligned_free(integral);
-     // _Offload_shared_aligned_free(sigmas);
+      _Offload_shared_aligned_free(integral);
+      _Offload_shared_aligned_free(sigmas);
     return output;
     
 }

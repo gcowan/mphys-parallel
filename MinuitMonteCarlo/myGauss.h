@@ -1,6 +1,5 @@
 #include "myFunc.h"
 #include <cilk/cilk.h>
-#include <mkl_vsl.h>
 #ifndef MYGAUSS_H
 #define MYGAUSS_H
 class _Cilk_shared myGauss: public myFunc {
