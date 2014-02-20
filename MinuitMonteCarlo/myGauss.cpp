@@ -62,7 +62,14 @@ double myGauss::evaluate(double * value){
 //Method to evaluate entire dataset using a set number of threads
 double myGauss::evaluate( double * dataSet, int dataLength, int threads ){
     double NLL = 0;
-    double norm = 1.0/normValue();
+    double * limits = (double *)malloc(sizeof(double)*2*dimensions);
+    for(int i=0; i<dimensions; i++){
+        limits[2*i] = -20.0;
+        limits[2*i+1] = 20.0;
+    }
+
+    double norm = 1.0/integrateVegas(limits,threads);
+    free(limits);
     omp_set_num_threads(threads);
     /*int off = _Offload_get_device_number();
     if(off==0)
@@ -134,7 +141,7 @@ double myGauss::integrateVegas(double * limits , int threads){
     //Setting the number of threads
     omp_set_num_threads(threads);
     //How many iterations to perform
-    int iterations = 20;
+    int iterations = 25;
     //How many points to sample in total
     int samples = 100000;
     //How many intervals for each dimension
@@ -143,6 +150,7 @@ double myGauss::integrateVegas(double * limits , int threads){
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
     double alpha = 0.2;
+    int seed = 43239;
     //double to store volume integrated over
 /*    double volume = 1.0;
     for(int i=0; i<dimensions; i++){
@@ -156,9 +164,18 @@ double myGauss::integrateVegas(double * limits , int threads){
     }
     //CHANGE SEED WHEN YOU KNOW IT WORKS
     //Setting up one random number stream for each thread
-    VSLStreamStatePtr * streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
-    for(int i=0; i<threads; i++){
-        vslNewStream(&streams[i], VSL_BRNG_SFMT19937,time(NULL));
+    VSLStreamStatePtr * streams; 
+    if(threads>=4){
+        streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads/4,64);
+        for(int i=0; i<threads/4; i++){
+            vslNewStream(&streams[i], VSL_BRNG_SFMT19937,seed+i);
+        }
+    }
+    else{
+        streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
+        for(int i=0; i<threads; i++){
+            vslNewStream(&streams[i], VSL_BRNG_SFMT19937,seed+i);
+        }
     }
     //Arrays to store integral and uncertainty for each iteration
     double * integral = (double *)_Offload_shared_aligned_malloc(sizeof(double)*iterations,64);
@@ -193,17 +210,17 @@ double myGauss::integrateVegas(double * limits , int threads){
     double sigmaTemp;
     double heightsTemp[dimensions*intervals];
     int threadNum;
-    for(int iter=0; iter<iterations; iter++){ 
-        //Performing  iterations
-        #pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp ) shared(streams,samples,boxLimits,iter,intervals, integral, sigmas, heights, threads) 
-        {
+#pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp) shared(iterations,subIntervals,alpha,mValues,subWidths,streams,samples,boxLimits,intervals, integral, sigmas, heights, threads) 
+    {
+        for(int iter=0; iter<iterations; iter++){ 
+            //Performing  iterations
             for(int i=0; i<dimensions*intervals; i++){
                 heightsTemp[i] = 0;
             }
 
             integralTemp = 0; 
             sigmaTemp = 0;
-           //Getting chunk sizes for each thread
+            //Getting chunk sizes for each thread
             threadNum = omp_get_thread_num();
             int seg = ceil((double)samples/threads);
             int lower = seg*threadNum;
@@ -215,8 +232,8 @@ double myGauss::integrateVegas(double * limits , int threads){
             for(int i=0; i<seg; i++){
                 prob = 1;
                 //Randomly choosing bins to sample from
-                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,binNums,0,intervals);
-                vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,randomNums,0,1);
+                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum/4],dimensions,binNums,0,intervals);
+                vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum/4],dimensions,randomNums,0,1);
                 //Getting samples from bins
                 for(int j=0; j<dimensions; j++){
                     int x = ((intervals+1)*j)+binNums[j];
@@ -233,82 +250,87 @@ double myGauss::integrateVegas(double * limits , int threads){
                     int x = binNums[j]+(j*intervals);
                     //May need to initialize heights
                     // #pragma omp atomic
-                     // printf("heightsTemp before=%f\n",heightsTemp[x]);
+                    // printf("heightsTemp before=%f\n",heightsTemp[x]);
                     heightsTemp[x] += eval;
-                     // printf("heightsTemp=%f x=%d eval=%f thread=%d\n",heightsTemp[x],x,eval,omp_get_thread_num());
+                    // printf("heightsTemp=%f x=%d eval=%f thread=%d\n",heightsTemp[x],x,eval,omp_get_thread_num());
                 }
 
             } 
-            #pragma omp critical
+#pragma omp critical
             {
-              integral[iter] += integralTemp;
-              sigmas[iter] += sigmaTemp;
-              for(int k=0; k<dimensions*intervals; k++){
-                   // printf("heightTemp[k]=%f k=%d\n",heightsTemp[k],k);
-                  heights[k] += heightsTemp[k];
-              }
+                integral[iter] += integralTemp;
+                sigmas[iter] += sigmaTemp;
+                for(int k=0; k<dimensions*intervals; k++){
+                    // printf("heightTemp[k]=%f k=%d\n",heightsTemp[k],k);
+                    heights[k] += heightsTemp[k];
+                }
             }
-        }
-        //Calculating the values of sigma and the integral
-        integral[iter] /= samples;
-        sigmas[iter] /= samples;
-        sigmas[iter] -= (integral[iter]*integral[iter]);
-        sigmas[iter] /= (samples-1);
+#pragma omp barrier
+#pragma omp single
+            {
+                //Calculating the values of sigma and the integral
+                integral[iter] /= samples;
+                sigmas[iter] /= samples;
+                sigmas[iter] -= (integral[iter]*integral[iter]);
+                sigmas[iter] /= (samples-1);
 
-        //Readjusting the box widths based on the heights
-        //Creating array to store values of m and their sum 
-        int totalM=0; 
-        //Doing for each dimension seperately
-        for(int i=0; i<dimensions; i++){
-            double sum = 0;
-            //Getting the sum of f*delta x
-            for(int j=0; j<intervals; j++){
-                int x = (i*(intervals))+j ;
-                //May be bug with these indicies
-                sum += heights[x]*(boxLimits[x+1+i]-boxLimits[x+i]);
-            }
-            //Performing the rescaling 
-            for(int j=0; j<intervals; j++){
-                int x = (i*(intervals))+j;
-                double value = heights[x]*(boxLimits[x+1+i]-boxLimits[x+i]);
-                mValues[j] = ceil(subIntervals*pow((value-1)*(1.0/log(value)),alpha));
-                subWidths[j] = (boxLimits[x+1+i]-boxLimits[x+i])/mValues[j];
-                totalM += mValues[j];
-            }
-            int mPerInterval = totalM/intervals;
-            int mValueIterator = 0;
-            //Adjusting the intervals going from 1 to less than intervals to keep the edges at the limits
-            for(int j=1; j<intervals; j++){
-                double width = 0;
-                for(int y=0; y<mPerInterval; y++){
-                    width += subWidths[mValueIterator];
-                    mValues[mValueIterator]--;
-                    if(mValues[mValueIterator]==0){
-                        mValueIterator++;
+                //Readjusting the box widths based on the heights
+                //Creating array to store values of m and their sum 
+                int totalM=0; 
+                //Doing for each dimension seperately
+                for(int i=0; i<dimensions; i++){
+                    double sum = 0;
+                    //Getting the sum of f*delta x
+                    for(int j=0; j<intervals; j++){
+                        int x = (i*(intervals))+j ;
+                        //May be bug with these indicies
+                        sum += heights[x]*(boxLimits[x+1+i]-boxLimits[x+i]);
+                    }
+                    //Performing the rescaling 
+                    for(int j=0; j<intervals; j++){
+                        int x = (i*(intervals))+j;
+                        double value = heights[x]*(boxLimits[x+1+i]-boxLimits[x+i]);
+                        mValues[j] = ceil(subIntervals*pow((value-1)*(1.0/log(value)),alpha));
+                        subWidths[j] = (boxLimits[x+1+i]-boxLimits[x+i])/mValues[j];
+                        totalM += mValues[j];
+                    }
+                    int mPerInterval = totalM/intervals;
+                    int mValueIterator = 0;
+                    //Adjusting the intervals going from 1 to less than intervals to keep the edges at the limits
+                    for(int j=1; j<intervals; j++){
+                        double width = 0;
+                        for(int y=0; y<mPerInterval; y++){
+                            width += subWidths[mValueIterator];
+                            mValues[mValueIterator]--;
+                            if(mValues[mValueIterator]==0){
+                                mValueIterator++;
+                            }
+                        }
+                        //NEED TO SET BOX LIMITS NOW  
+                        int x = j+(i*(intervals+1));
+                        boxLimits[x] = boxLimits[x-1]+width;    
+                    }
+                    //Setting mvalues etc. (reseting memory allocated before the dimensions loop to 0)
+                    totalM = 0;
+                    for(int k=0; k<intervals; k++){
+                        subWidths[k] = 0;
+                        mValues[k] = 0;
+
                     }
                 }
-                //NEED TO SET BOX LIMITS NOW  
-                int x = j+(i*(intervals+1));
-                boxLimits[x] = boxLimits[x-1]+width;    
-            }
-            //Setting mvalues etc. (reseting memory allocated before the dimensions loop to 0)
-            totalM = 0;
-            for(int k=0; k<intervals; k++){
-                subWidths[k] = 0;
-                mValues[k] = 0;
 
+                //Setting heights to zero for next iteration
+                for(int i=0; i<intervals*dimensions; i++ ){
+                    heights[i] = 0;
+                }
             }
-        }
-        //Setting heights to zero for next iteration
-        for(int i=0; i<intervals*dimensions; i++ ){
-            heights[i] = 0;
-        }
-        //Stepping up to more samples when grid calibrated
-        if(iter==10){
-            samples = 100000000;
+            //Stepping up to more samples when grid calibrated
+            if(iter==10){
+                samples = 10000000;
+            }
+            
         }
     }
-
     //All iterations done 
     //Free stuff
     
@@ -335,7 +357,7 @@ double myGauss::integrateVegas(double * limits , int threads){
        chisq += (((integral[i]-output)*(integral[i]-output))/(output*output))*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
     }
     if(chisq>iterations){
-        printf("Chisq value is %f, it should be not much greater than %d (iterations-1)\n",chisq,iterations-1);
+        printf("Chisq value is %f, it should be not much greater than %d (iterations-1) Integral:%f\n",chisq,iterations-1,output);
     }
       _Offload_shared_aligned_free(integral);
       _Offload_shared_aligned_free(sigmas);
