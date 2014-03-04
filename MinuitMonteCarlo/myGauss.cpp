@@ -1,13 +1,9 @@
 #include "myGauss.h"
 #include <math.h>
 #include <omp.h>
-#include <time.h>
 #include <stdio.h>
 #include <mkl_vsl.h>
 #define PI 3.141592653589793238462
-#define RESTRICT restrict
-//Number of points to sample in monte carlo integration
-#define nsamples 100000
 
 //Generate Gaussian with set of parameters
 myGauss::myGauss(int numSigmas,  double *  paramValues){
@@ -64,11 +60,12 @@ double myGauss::evaluate( double * dataSet, int dataLength, int threads ){
     double NLL = 0;
     double * limits = (double *)malloc(sizeof(double)*2*dimensions);
     for(int i=0; i<dimensions; i++){
-        limits[2*i] = -20.0;
-        limits[2*i+1] = 20.0;
+        limits[2*i] = -5.0;
+        limits[2*i+1] = 5.0;
     }
 
-    double norm = 1.0/integrateVegas(limits,threads);
+      double norm = 1.0/integrateVegas(limits,threads);
+      // double norm = 1.0/normValue();
     free(limits);
     omp_set_num_threads(threads);
     /*int off = _Offload_get_device_number();
@@ -121,12 +118,10 @@ double myGauss::normValue(){
 
 //Method to generate data distributed like the gaussian
 void myGauss::generateData(int length, double *  p){
-    srand(time(NULL));
+    VSLStreamStatePtr stream;
+    vslNewStream( &stream, VSL_BRNG_MT19937, 777 );
     for(int i=0; i<length*dimensions; i++){
-        double rand1 = ((double)rand())/RAND_MAX;
-        double rand2 = ((double)rand())/RAND_MAX;
-        //Now doing the box muller method
-        p[i] = sqrt(-2.0*log(rand1))*cos(2*PI*rand2)*paramValue[i%dimensions];
+        vdRngGaussian(VSL_RNG_METHOD_GAUSSIAN_BOXMULLER,stream,1,(p+i),0,paramValue[i%dimensions]);
     };
 };
 
@@ -141,22 +136,25 @@ double myGauss::integrateVegas(double * limits , int threads){
     //Setting the number of threads
     omp_set_num_threads(threads);
     //How many iterations to perform
-    int iterations = 25;
+    int iterations =12;
+    //Which iteration to start sampling more
+    int switchIteration = 7;
     //How many points to sample in total
     int samples = 100000;
+    //How many points to sample after grid set up
+    int samplesAfter = 5000000;
     //How many intervals for each dimension
     int intervals = 10;
     //How many subIntervals
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
-    double alpha = 0.2;
-    int seed = 43239;
+    double alpha = 0.3;
+    int seed = 9857843;
     //double to store volume integrated over
-/*    double volume = 1.0;
+    double volume = 1.0;
     for(int i=0; i<dimensions; i++){
         volume*= (limits[(2*i)+1]-limits[2*i]);
     };
-    */
     //Number of boxes
     int numBoxes = intervals;
     for(int i=1; i<dimensions; i++){
@@ -165,17 +163,9 @@ double myGauss::integrateVegas(double * limits , int threads){
     //CHANGE SEED WHEN YOU KNOW IT WORKS
     //Setting up one random number stream for each thread
     VSLStreamStatePtr * streams; 
-    if(threads>=4){
-        streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads/4,64);
-        for(int i=0; i<threads/4; i++){
-            vslNewStream(&streams[i], VSL_BRNG_SFMT19937,seed+i);
-        }
-    }
-    else{
-        streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
-        for(int i=0; i<threads; i++){
-            vslNewStream(&streams[i], VSL_BRNG_SFMT19937,seed+i);
-        }
+    streams = ( VSLStreamStatePtr * ) _Offload_shared_aligned_malloc(sizeof(VSLStreamStatePtr)*threads,64);
+    for(int i=0; i<threads; i++){
+        vslNewStream(&streams[i], VSL_BRNG_MT2203+i,seed);
     }
     //Arrays to store integral and uncertainty for each iteration
     double * integral = (double *)_Offload_shared_aligned_malloc(sizeof(double)*iterations,64);
@@ -210,9 +200,13 @@ double myGauss::integrateVegas(double * limits , int threads){
     double sigmaTemp;
     double heightsTemp[dimensions*intervals];
     int threadNum;
-#pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp) shared(iterations,subIntervals,alpha,mValues,subWidths,streams,samples,boxLimits,intervals, integral, sigmas, heights, threads) 
+#pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp) shared(iterations,subIntervals,alpha,mValues,subWidths,streams,samples,boxLimits,intervals, integral, sigmas, heights, threads, volume, samplesAfter, switchIteration) 
     {
         for(int iter=0; iter<iterations; iter++){ 
+            //Stepping up to more samples when grid calibrated
+            if(iter==switchIteration){
+                samples = samplesAfter;
+            }
             //Performing  iterations
             for(int i=0; i<dimensions*intervals; i++){
                 heightsTemp[i] = 0;
@@ -232,8 +226,8 @@ double myGauss::integrateVegas(double * limits , int threads){
             for(int i=0; i<seg; i++){
                 prob = 1;
                 //Randomly choosing bins to sample from
-                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum/4],dimensions,binNums,0,intervals);
-                vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum/4],dimensions,randomNums,0,1);
+                viRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,binNums,0,intervals);
+                vdRngUniform(VSL_RNG_METHOD_UNIFORM_STD,streams[threadNum],dimensions,randomNums,0,1);
                 //Getting samples from bins
                 for(int j=0; j<dimensions; j++){
                     int x = ((intervals+1)*j)+binNums[j];
@@ -260,6 +254,7 @@ double myGauss::integrateVegas(double * limits , int threads){
             {
                 integral[iter] += integralTemp;
                 sigmas[iter] += sigmaTemp;
+                
                 for(int k=0; k<dimensions*intervals; k++){
                     // printf("heightTemp[k]=%f k=%d\n",heightsTemp[k],k);
                     heights[k] += heightsTemp[k];
@@ -324,10 +319,7 @@ double myGauss::integrateVegas(double * limits , int threads){
                     heights[i] = 0;
                 }
             }
-            //Stepping up to more samples when grid calibrated
-            if(iter==10){
-                samples = 10000000;
-            }
+
             
         }
     }
@@ -354,10 +346,10 @@ double myGauss::integrateVegas(double * limits , int threads){
     //Calculating value of x^2 to check if result can be trusted
     double chisq = 0;
     for(int i=0; i<iterations; i++){
-       chisq += (((integral[i]-output)*(integral[i]-output))/(output*output))*((integral[i]*integral[i])/(sigmas[i]*sigmas[i]));
+       chisq += (((integral[i]-output)*(integral[i]-output))/(sigmas[i]*sigmas[i]));
     }
     if(chisq>iterations){
-        printf("Chisq value is %f, it should be not much greater than %d (iterations-1) Integral:%f\n",chisq,iterations-1,output);
+        printf("Chisq value is %f, it should be not much greater than %d (iterations-1) Integral:%f Analytical Value=%f\n",chisq,iterations-1,output,normValue());
     }
       _Offload_shared_aligned_free(integral);
       _Offload_shared_aligned_free(sigmas);

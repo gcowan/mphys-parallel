@@ -18,6 +18,7 @@ class _Cilk_shared myGauss: public myFunc {
         double evaluate( double * dataSet, int dataLength, int threads);
         double normValue();
         int getDimensions();
+        void generateRandNums(double *, int *, int,int);
         double integrateVegas( double * , int threads );
 
 
