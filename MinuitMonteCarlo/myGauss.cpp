@@ -9,6 +9,7 @@
 myGauss::myGauss(int numSigmas,  double *  paramValues){
     paramValue = paramValues;
     dimensions = numSigmas;
+    avgTime = 0;
 
     oneOverTwoSigsSq = (_Cilk_shared double *)_Offload_shared_aligned_malloc(sizeof(int)*numSigmas,64);
     for(int i=0; i<numSigmas; i++){
@@ -26,6 +27,7 @@ myGauss::myGauss(int numSigmas){
         oneOverTwoSigsSq[i] = 1.0/(2*(paramValue[i]*paramValue[i]));
     };
     sqrtTwoPi = sqrt(2*PI);
+    avgTime = 0;
 };
 
 
@@ -57,6 +59,7 @@ double myGauss::evaluate(double * value){
 
 //Method to evaluate entire dataset using a set number of threads
 double myGauss::evaluate( double * dataSet, int dataLength, int threads ){
+    double time = omp_get_wtime();
     double NLL = 0;
     double * limits = (double *)malloc(sizeof(double)*2*dimensions);
     for(int i=0; i<dimensions; i++){
@@ -64,8 +67,8 @@ double myGauss::evaluate( double * dataSet, int dataLength, int threads ){
         limits[2*i+1] = 5.0;
     }
 
-      double norm = 1.0/integrateVegas(limits,threads);
-      // double norm = 1.0/normValue();
+       // double norm = 1.0/integrateVegas(limits,threads);
+       double norm = 1.0/normValue();
     free(limits);
     omp_set_num_threads(threads);
     /*int off = _Offload_get_device_number();
@@ -73,13 +76,15 @@ double myGauss::evaluate( double * dataSet, int dataLength, int threads ){
         printf("On mic\n");
     if(off==-1)
         printf("On host\n");
-   */ 
+    */
     #pragma omp parallel for default(none) shared(dataSet,dataLength,norm) reduction(+:NLL)
     for(int i=0; i<dataLength*dimensions; i+=dimensions){
        double evaluated = evaluate(dataSet+i);
        evaluated*=norm;
        NLL+=log(evaluated);
     }
+    time = omp_get_wtime()-time;
+    avgTime+=time;
     return  -NLL;
 };
 
@@ -142,13 +147,13 @@ double myGauss::integrateVegas(double * limits , int threads){
     //How many points to sample in total
     int samples = 100000;
     //How many points to sample after grid set up
-    int samplesAfter = 5000000;
+    int samplesAfter = 10000000;
     //How many intervals for each dimension
     int intervals = 10;
     //How many subIntervals
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
-    double alpha = 0.3;
+    double alpha = 1.3;
     int seed = 9857843;
     //double to store volume integrated over
     double volume = 1.0;
@@ -284,7 +289,7 @@ double myGauss::integrateVegas(double * limits , int threads){
                     //Performing the rescaling 
                     for(int j=0; j<intervals; j++){
                         int x = (i*(intervals))+j;
-                        double value = heights[x]*(boxLimits[x+1+i]-boxLimits[x+i]);
+                        double value = heights[x]*(boxLimits[x+1+i]-boxLimits[x+i])/sum;
                         mValues[j] = ceil(subIntervals*pow((value-1)*(1.0/log(value)),alpha));
                         subWidths[j] = (boxLimits[x+1+i]-boxLimits[x+i])/mValues[j];
                         totalM += mValues[j];

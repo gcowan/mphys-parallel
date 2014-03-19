@@ -1,7 +1,7 @@
 CC=icpc
 LDFLAGS= -mkl 
 
-CFLAGS=-openmp -openmp-report2 -vec-report3 -Ofast
+CFLAGS=-openmp -openmp-report2 -vec-report3 -O3
 
 ROOTFLAGS=-L/data/s1007232/root/root/lib -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -pthread  -ldl -rdynamic -pthread -m64 -I/data/s1007232/root/root/include -lMinuit
 

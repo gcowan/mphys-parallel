@@ -19,8 +19,8 @@ using namespace std;
 _Cilk_shared  myFunc * _Cilk_shared  funcp;
 _Cilk_shared const int length = 1000000;
 _Cilk_shared  double  *  _Cilk_shared  data;  
-_Cilk_shared int threads=12;
-int dimensions = 10;
+_Cilk_shared int threads=60;
+int dimensions = 5;
 _Cilk_shared myGauss gauss(dimensions);
 _Cilk_shared double * _Cilk_shared limits;
  FILE * output;
@@ -35,7 +35,7 @@ void _Cilk_shared funcn(Int_t & npar, Double_t * deriv, Double_t& f, Double_t * 
     for(int i=0; i<dim; i++){
         funcp->setParameter(i,par[i]);
     };
-    double result =     wrapperFunction();
+    double result =    wrapperFunction();
     f = result;
        // printf("result=%f\n",result);
        // printf("par1=%f \n",par[0]);
@@ -54,23 +54,32 @@ int main(){
       data =  (_Cilk_shared double * ) _Offload_shared_aligned_malloc(sizeof(double)*length*dimensions,64);
       funcp->generateData(length,data);
     printf("Finished generating data\n");
-    double time = omp_get_wtime();
-    TMinuit min(dimensions);
-    min.SetFCN(funcn);
-    min.SetErrorDef(0.5);
-    min.SetPrintLevel(1); 
-    min.DefineParameter(0,"Sigma", 0.7, 0.1,0.5,1.0);
-    min.DefineParameter(1,"Sigma 1",0.7,0.1,0.5,1.0);
-    min.DefineParameter(2,"Sigma 2",0.7,0.1,0.5,1);
-    min.DefineParameter(3,"Sigma 3",0.7,0.1,0.5,1);
-    min.DefineParameter(4,"Sigma 4",0.7,0.1,0.5,1);
-    min.DefineParameter(5,"Sigma 5",0.7,0.1,0.5,1);
+    FILE * output = fopen("host.txt","w");
+
+    /*min.DefineParameter(5,"Sigma 5",0.7,0.1,0.5,1);
     min.DefineParameter(6,"Sigma 6",0.7,0.1,0.5,1);
     min.DefineParameter(7,"Sigma 7",0.7,0.1,0.5,1);
     min.DefineParameter(8,"Sigma 8",0.7,0.1,0.5,1);
     min.DefineParameter(9,"Sigma 9",0.7,0.1,0.5,1);
-    min.Migrad();
-    time = omp_get_wtime()-time;
-    printf("That fit took %f seconds \n",time);
+    */
+    for(threads = 1; threads<=12; threads+=1){
+        TMinuit min(dimensions);
+        min.SetFCN(funcn);
+        min.SetErrorDef(0.5);
+        min.SetPrintLevel(1); 
+        min.DefineParameter(0,"Sigma", 0.7, 0.1,0.5,1.0);
+        min.DefineParameter(1,"Sigma 1",0.7,0.1,0.5,1.0);
+        min.DefineParameter(2,"Sigma 2",0.7,0.1,0.5,1);
+        min.DefineParameter(3,"Sigma 3",0.7,0.1,0.5,1);
+        min.DefineParameter(4,"Sigma 4",0.7,0.1,0.5,1);
+        double time = omp_get_wtime();
+        min.Migrad();
+        time = omp_get_wtime()-time;
+        int numCalls = min.fNfcn;
+        printf("That fit took %f seconds time on Phi %f number of calls %d\n",time,gauss.avgTime,numCalls);
+        fprintf(output,"%d %f %f %f %f\n",threads,time,gauss.avgTime,time/numCalls,gauss.avgTime/numCalls);
+        gauss.avgTime = 0; 
+    }
+    fclose(output);
     return 0;
 };

@@ -8,6 +8,7 @@ class _Cilk_shared myGauss: public myFunc {
         double sqrtTwoPi;
 
     public:
+        double avgTime;
         myGauss(int numSigmas , double *   sigmas);
         myGauss(int numSigmas);
         ~myGauss();
