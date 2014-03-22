@@ -37,14 +37,14 @@ int main(){
     dataSet = (double *) malloc(sizeof(double)*dataLength*dimensions);
     generateData(dataLength,dataSet,params);
     printf("Finished generating data\n");
-    FILE * output = fopen("hostMC.txt","w");
+    FILE * output = fopen("newMCPhi.txt","w");
     double mallocTime = 0;
-    double singleTime = 0;
+    double critTime = 0;
     double phiTime = 0;
     //Allocating dataSet on coprocessor
       // #pragma offload_transfer target(mic:0) in(dataSet : length(dataLength*dimensions)  ALLOC) 
        // #pragma offload_transfer target(mic:0) in( dataLength : ALLOC)
-    for(threads=1; threads<=12; threads+=1){
+    for(threads=60; threads<=240; threads+=10){
 /*        TMinuit min(dimensions);
         min.SetFCN(funcn);
         min.SetErrorDef(0.5);
@@ -67,19 +67,19 @@ int main(){
             limits[2*i+1] = 5.0;
         }
         double result;
-         // #pragma offload_transfer target(mic:0) in( limits : length(2*dimensions) ALLOC)
- // #pragma offload_transfer target(mic:0) in(params : length(dimensions) ALLOC)
+            #pragma offload_transfer target(mic:0) in( limits : length(2*dimensions) ALLOC)
+    #pragma offload_transfer target(mic:0) in(params : length(dimensions) ALLOC)
         double totalTime = omp_get_wtime();
        
- // #pragma offload target(mic:0) out(result) inout(mallocTime,singleTime,phiTime) nocopy(limits,params : REUSE)
+    #pragma offload target(mic:0) out(result) inout(mallocTime,critTime,phiTime) nocopy(limits,params : REUSE)
         {
-            result = integrateVegas(limits,threads,params,mallocTime,singleTime,phiTime);
+            result = integrateVegas(limits,threads,params,mallocTime,critTime,phiTime);
         }
         totalTime = omp_get_wtime()-totalTime;
-        fprintf(output,"%d %f %f %f %f\n",threads,totalTime,phiTime,mallocTime,singleTime);
+        fprintf(output,"%d %f %f %f\n",threads,totalTime,phiTime,critTime);
         printf("result=%f normval=%f\n",result,normValue(params));
         mallocTime =0;
-        singleTime =0;
+        critTime = 0;
         
     } 
     fclose(output);

@@ -11,7 +11,7 @@ int dataLength=235764;
 #include <stdio.h>
 #pragma offload_attribute(pop)
 //Number of parameters
-int parDim = 4;
+int parDim = 2;
 #include "fit.h"
 //Minuit interface
 #include <mkl_vsl.h>
@@ -33,7 +33,7 @@ int main(){
        fscanf(input,"%lf",&tmp);
        dataSet[i]=tmp;
        //Now scanning lifetime and doing nothing with it
-       fscanf(input,"%f",&tmp);
+       fscanf(input,"%lf",&tmp);
     }
     printf("Finished scanning  data element 1 is %f should be 5485.2739  \n",dataSet[0]);
     printf("data element 2 is %f should be 5422.9331\n",dataSet[1]);
@@ -45,10 +45,10 @@ int main(){
     min.SetFCN(funcn);
     min.SetErrorDef(0.5);
     min.SetPrintLevel(1); 
-    min.DefineParameter(0,"Mass", 5000, 500,4000,6000);
-    min.DefineParameter(1," Width of Signal",50,10,0,100);
-    min.DefineParameter(2,"Background frac",0.5,0.1,0,1);
-    min.DefineParameter(3,"Background A",0,0.01,-0.05,0.05);
+    min.DefineParameter(0,"Mass", 5200, 100,5000,5500);
+    min.DefineParameter(1," Width of Signal",50,5,0,200);
+     // min.DefineParameter(2,"Background frac",5,1,0,10);
+     // min.DefineParameter(3,"Background A",0,1,-5,5);
 /*  min.DefineParameter(5,"Sigma 5",0.7,0.1,0.5,1);
     min.DefineParameter(6,"Sigma 6",0.7,0.1,0.5,1);
     min.DefineParameter(7,"Sigma 7",0.7,0.1,0.5,1);
@@ -72,8 +72,8 @@ int main(){
 void funcn(Int_t & npar, Double_t * deriv, Double_t& f, Double_t * par, Int_t flag){
     params[0] = par[0];
     params[1] = par[1];
-    params[2] = par[2];
-    params[3] = par[3];
+     // params[2] = par[2];
+     // params[3] = par[3];
     double result = 0;
      // printf("Func call\n");
      // double time = omp_get_wtime();

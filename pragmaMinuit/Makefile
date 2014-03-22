@@ -2,7 +2,7 @@ CC=icpc
 
 CFLAGS=-openmp -openmp-report2 -vec-report2 -O3
 
-FITFLAGS=  -openmp -mkl 
+FITFLAGS=  -openmp -lmkl_sequential
 
 ROOTFLAGS =  -pthread -m64 -I/data/s1007232/root/root/include 
 

@@ -78,7 +78,7 @@ double normValue(double * paramValue){
 
 
 
-double integrateVegas(double * limits , int threads, double * params, double & mallocTime, double &singleTime, double & phiTime){
+double integrateVegas(double * limits , int threads, double * params, double & mallocTime, double &critTime, double & phiTime){
     phiTime = omp_get_wtime();
     mallocTime = omp_get_wtime();
     //Setting the number of threads
@@ -153,7 +153,7 @@ double integrateVegas(double * limits , int threads, double * params, double & m
     __declspec(align(64)) double heightsTemp[dimensions*intervals];
     int threadNum;
     mallocTime = omp_get_wtime()-mallocTime;
-#pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp) shared(iterations,subIntervals,alpha,mValues,subWidths,streams,samples,boxLimits,intervals, integral, sigmas, heights, threads, volume, samplesAfter, switchIteration, params, singleTime) 
+#pragma omp parallel  default(none) private(sigmaTemp,integralTemp,binNums,randomNums,prob,threadNum,heightsTemp) shared(iterations,subIntervals,alpha,mValues,subWidths,streams,samples,boxLimits,intervals, integral, sigmas, heights, threads, volume, samplesAfter, switchIteration, params, critTime) 
     {
         for(int iter=0; iter<iterations; iter++){ 
             //Stepping up to more samples when grid calibrated
@@ -205,17 +205,19 @@ double integrateVegas(double * limits , int threads, double * params, double & m
             } 
 #pragma omp critical
             {
+                double crit = omp_get_wtime();
                 integral[iter] += integralTemp;
                 sigmas[iter] += sigmaTemp;
                 for(int k=0; k<dimensions*intervals; k++){
                     // printf("heightTemp[k]=%f k=%d\n",heightsTemp[k],k);
                     heights[k] += heightsTemp[k];
                 }
+                crit = omp_get_wtime()-crit;
+                critTime += crit;
             }
 #pragma omp barrier
 #pragma omp single
             {
-                double single = omp_get_wtime();
                 //Calculating the values of sigma and the integral
                 integral[iter] /= samples;
                 sigmas[iter] /= samples;
@@ -272,8 +274,6 @@ double integrateVegas(double * limits , int threads, double * params, double & m
                 for(int i=0; i<intervals*dimensions; i++ ){
                     heights[i] = 0;
                 }
-                single = omp_get_wtime()-single;
-                singleTime += single;
             }
 
             

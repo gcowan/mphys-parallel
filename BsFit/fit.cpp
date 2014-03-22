@@ -21,7 +21,7 @@ inline double evaluate(double * value, double * params){
 
     double output = exp(-0.5*expon*expon/(params[1]*params[1]));
     //Background Noise polynomial
-    output += params[2]*(1+params[3]*value[0]);
+     // output += params[2]*(1+params[3]*value[0]);
     // printf("output=%f value[0]=%f params[0]=%f sigma=%f\n",output,value[0],params[0],params[1]);
     return output;
 };
@@ -82,8 +82,8 @@ inline double integrateVegas(double * limits , int threads, double * params){
     //How many subIntervals
     int subIntervals = 1000;
     //Parameter alpha controls convergence rate
-    double alpha = 0.2;
-    int seed = 40847516;
+    double alpha = 0.5;
+    int seed = 92834721;
     //double to store volume integrated over
     double volume = 1.0;
     for(int i=0; i<dimensions; i++){
